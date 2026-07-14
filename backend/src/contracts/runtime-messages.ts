@@ -3,7 +3,7 @@ import { z } from "zod";
 import { idSchema, isoDateTimeSchema, nonEmptyTextSchema } from "../domain/models/common.js";
 import { invitationStatusSchema } from "../domain/models/invitation.js";
 import { playerProfileSchema } from "../domain/models/player-profile.js";
-import { shareSelectionSchema } from "../domain/models/sharing.js";
+import { sharedPlayerPackageSchema, shareSelectionSchema } from "../domain/models/sharing.js";
 
 const requestFields = {
   requestId: idSchema,
@@ -60,6 +60,25 @@ export const runtimeCommandSchema = z.discriminatedUnion("type", [
   z
     .object({
       ...requestFields,
+      type: z.literal("share.send"),
+      payload: z
+        .object({
+          relationshipId: idSchema,
+          package: sharedPlayerPackageSchema,
+          serializedPayload: nonEmptyTextSchema,
+          payloadBytes: z
+            .number()
+            .int()
+            .positive()
+            .max(64 * 1024),
+          playerApproved: z.literal(true)
+        })
+        .strict()
+    })
+    .strict(),
+  z
+    .object({
+      ...requestFields,
       type: z.literal("invitation.respond"),
       payload: z
         .object({
@@ -86,6 +105,22 @@ export const runtimeEventSchema = z.discriminatedUnion("type", [
           wallet: z.enum(["not_initialized", "ready", "error"])
         })
         .strict()
+    })
+    .strict(),
+  z
+    .object({
+      requestId: idSchema,
+      occurredAt: isoDateTimeSchema,
+      type: z.literal("share.sent"),
+      payload: z.object({ packageId: idSchema }).strict()
+    })
+    .strict(),
+  z
+    .object({
+      requestId: idSchema,
+      occurredAt: isoDateTimeSchema,
+      type: z.literal("share.received"),
+      payload: z.object({ package: sharedPlayerPackageSchema }).strict()
     })
     .strict(),
   z

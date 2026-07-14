@@ -19,6 +19,9 @@ export class ScoutingConnectionService {
   readonly #senderPublicKey: string;
   readonly #now: () => Date;
   #connection: PeerConnection | undefined;
+  readonly #incomingEventListeners = new Set<
+    (event: ScoutPassEvent, relationshipId: string) => Promise<void>
+  >();
 
   public constructor(options: ScoutingConnectionServiceOptions) {
     this.#transport = options.transport;
@@ -44,10 +47,6 @@ export class ScoutingConnectionService {
   }
 
   public async sendTestEvent(relationshipId: string): Promise<ProfileReceivedEvent> {
-    if (this.#connection === undefined) {
-      throw new Error("Cannot send a test event before the Pears connection is established.");
-    }
-
     const event: ProfileReceivedEvent = {
       id: `event_test_${randomUUID()}`,
       type: "profile.received",
@@ -60,15 +59,43 @@ export class ScoutingConnectionService {
       }
     };
 
+    await this.sendEvent(relationshipId, event);
+    return event;
+  }
+
+  public async sendEvent(relationshipId: string, event: ScoutPassEvent): Promise<void> {
+    if (this.#connection === undefined) {
+      throw new Error("Cannot send an event before the Pears connection is established.");
+    }
+    if (this.#connection.relationshipId !== relationshipId) {
+      throw new Error("The active Pears connection belongs to a different relationship.");
+    }
+
     await this.#connection.send(event);
     await this.#eventLog.append(relationshipId, event);
-    return event;
+  }
+
+  public onIncomingEvent(
+    listener: (event: ScoutPassEvent, relationshipId: string) => Promise<void>
+  ): () => void {
+    this.#incomingEventListeners.add(listener);
+    return () => this.#incomingEventListeners.delete(listener);
+  }
+
+  public listEvents(relationshipId: string): Promise<readonly ScoutPassEvent[]> {
+    return this.#eventLog.list(relationshipId);
   }
 
   public async handleIncomingEvent(event: ScoutPassEvent): Promise<boolean> {
     assertEventIsFresh(event, { now: this.#now() });
     const relationshipId = inferRelationshipId(event, this.#connection?.relationshipId);
-    return this.#eventLog.append(relationshipId, event);
+    const appended = await this.#eventLog.append(relationshipId, event);
+    if (appended) {
+      for (const listener of this.#incomingEventListeners) {
+        await listener(event, relationshipId);
+      }
+    }
+    return appended;
   }
 }
 

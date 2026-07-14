@@ -1,14 +1,23 @@
 import { describe, expect, it } from "vitest";
 
 import { ScoutingConnectionService } from "../src/application/connections/scouting-connection-service.js";
+import {
+  preparePlayerShare,
+  ProfileSharingService
+} from "../src/application/share/profile-sharing-service.js";
 import type {
   PeerConnection,
   PeerConnectionStatus,
   PeerTransport
 } from "../src/application/ports/integrations.js";
-import type { RelationshipEventLogRepository } from "../src/application/ports/repositories.js";
+import type {
+  RelationshipEventLogRepository,
+  SharedPackageRepository
+} from "../src/application/ports/repositories.js";
 import type { ScoutPassEvent } from "../src/domain/models/events.js";
-import { NOW, PUBLIC_KEY } from "./fixtures.js";
+import type { SharedPlayerPackage } from "../src/domain/models/sharing.js";
+import { DEFAULT_SHARE_SELECTION } from "../src/domain/models/sharing.js";
+import { createPlayer, createReport, NOW, PUBLIC_KEY } from "./fixtures.js";
 
 class InMemoryEventLog implements RelationshipEventLogRepository {
   readonly events = new Map<string, ScoutPassEvent[]>();
@@ -31,12 +40,11 @@ class InMemoryEventLog implements RelationshipEventLogRepository {
 class LinkedConnection implements PeerConnection {
   public constructor(
     public readonly relationshipId: string,
-    private readonly deliver: (event: ScoutPassEvent) => void
+    private readonly deliver: (event: ScoutPassEvent) => Promise<void>
   ) {}
 
   public send(event: ScoutPassEvent): Promise<void> {
-    this.deliver(event);
-    return Promise.resolve();
+    return this.deliver(event);
   }
 
   public close(): Promise<void> {
@@ -58,9 +66,10 @@ class LinkedTransport implements PeerTransport {
 
   public connect(invite: string): Promise<PeerConnection> {
     const relationshipId = invite.split(":").at(-1) ?? "relationship_demo_001";
-    this.connection = new LinkedConnection(relationshipId, (event) => {
-      void this.peer?.emit(event);
-    });
+    this.connection = new LinkedConnection(
+      relationshipId,
+      (event) => this.peer?.emit(event) ?? Promise.resolve()
+    );
     this.peer?.acceptConnection(relationshipId, this);
     this.#connectionListener?.(this.connection);
     this.#statusListener?.("connected");
@@ -97,11 +106,31 @@ class LinkedTransport implements PeerTransport {
   }
 
   private acceptConnection(relationshipId: string, peer: LinkedTransport): void {
-    this.connection = new LinkedConnection(relationshipId, (event) => {
-      void peer.emit(event);
-    });
+    this.connection = new LinkedConnection(relationshipId, (event) => peer.emit(event));
     this.#connectionListener?.(this.connection);
     this.#statusListener?.("connected");
+  }
+}
+
+class InMemoryPackageRepository implements SharedPackageRepository {
+  readonly #packages = new Map<string, SharedPlayerPackage>();
+
+  public get(id: string): Promise<SharedPlayerPackage | undefined> {
+    const value = this.#packages.get(id);
+    return Promise.resolve(value === undefined ? undefined : structuredClone(value));
+  }
+
+  public list(): Promise<readonly SharedPlayerPackage[]> {
+    return Promise.resolve([...this.#packages.values()].map((value) => structuredClone(value)));
+  }
+
+  public save(entity: SharedPlayerPackage): Promise<void> {
+    this.#packages.set(entity.packageId, structuredClone(entity));
+    return Promise.resolve();
+  }
+
+  public delete(id: string): Promise<boolean> {
+    return Promise.resolve(this.#packages.delete(id));
   }
 }
 
@@ -141,5 +170,69 @@ describe("scouting connection service", () => {
       playerEvent,
       scoutEvent
     ]);
+  });
+
+  it("requires approval, stores only one package, and acknowledges it once", async () => {
+    const scoutTransport = new LinkedTransport();
+    const playerTransport = new LinkedTransport();
+    scoutTransport.peer = playerTransport;
+    playerTransport.peer = scoutTransport;
+    const scoutLog = new InMemoryEventLog();
+    const playerLog = new InMemoryEventLog();
+    const scoutConnection = new ScoutingConnectionService({
+      transport: scoutTransport,
+      eventLog: scoutLog,
+      senderPublicKey: "b".repeat(64),
+      now: () => NOW
+    });
+    const playerConnection = new ScoutingConnectionService({
+      transport: playerTransport,
+      eventLog: playerLog,
+      senderPublicKey: PUBLIC_KEY,
+      now: () => NOW
+    });
+    const scoutPackages = new InMemoryPackageRepository();
+    const playerPackages = new InMemoryPackageRepository();
+    const scoutSharing = new ProfileSharingService({
+      connectionService: scoutConnection,
+      receivedPackages: scoutPackages,
+      senderPublicKey: "b".repeat(64),
+      now: () => NOW
+    });
+    const playerSharing = new ProfileSharingService({
+      connectionService: playerConnection,
+      receivedPackages: playerPackages,
+      senderPublicKey: PUBLIC_KEY,
+      now: () => NOW
+    });
+
+    const invite = await scoutConnection.createInvite("relationship_demo_001");
+    await playerConnection.connect(invite);
+    const prepared = preparePlayerShare({
+      player: createPlayer({ contact: { email: "private@example.test" } }),
+      report: createReport(),
+      selection: DEFAULT_SHARE_SELECTION,
+      playerPublicKey: PUBLIC_KEY,
+      now: NOW
+    });
+
+    await expect(
+      playerSharing.sendPreparedShare("relationship_demo_001", prepared, false)
+    ).rejects.toThrow("approval is required");
+    await playerSharing.sendPreparedShare("relationship_demo_001", prepared, true);
+    await playerSharing.sendPreparedShare("relationship_demo_001", prepared, true);
+
+    expect(await scoutPackages.list()).toEqual([prepared.package]);
+    expect(JSON.stringify((await scoutPackages.list())[0])).not.toContain("private@example.test");
+    expect(
+      (await scoutLog.list("relationship_demo_001")).filter(
+        (event) =>
+          event.type === "profile.received" &&
+          event.payload.packageId === prepared.package.packageId
+      )
+    ).toHaveLength(1);
+
+    scoutSharing.dispose();
+    playerSharing.dispose();
   });
 });

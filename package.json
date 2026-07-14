@@ -19,6 +19,7 @@
     "format:check": "prettier --check .",
     "lint": "eslint . --max-warnings=0",
     "test": "npm run test --workspace backend && npm run test --workspace frontend",
+    "test:p2p": "npm run test:p2p --workspace backend",
     "typecheck": "npm run typecheck --workspace backend && npm run typecheck --workspace frontend"
   },
   "devDependencies": {
@@ -29,6 +30,7 @@
     "eslint": "^10.7.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react-hooks": "^7.1.1",
+    "hyperdht": "6.33.0",
     "pear": "^3.0.0",
     "prettier": "^3.9.5",
     "typescript": "^6.0.3",

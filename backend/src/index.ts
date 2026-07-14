@@ -2,6 +2,8 @@ export * from "./application/ports/integrations.js";
 export * from "./application/ports/repositories.js";
 export * from "./application/connections/scouting-connection-service.js";
 export * from "./application/share/create-shared-package.js";
+export * from "./application/share/prepare-player-share.js";
+export * from "./application/share/profile-sharing-service.js";
 export * from "./contracts/index.js";
 export * from "./domain/identity.js";
 export * from "./domain/services/event-deduplicator.js";

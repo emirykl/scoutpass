@@ -1,56 +1,119 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import type { RuntimeEvent } from "@scoutpass/backend/contracts";
 
 import type { RuntimeSnapshot } from "../../runtime/local-runtime.js";
+import {
+  createRuntimeRequest,
+  isDesktopRuntimeAvailable,
+  requestRuntime,
+  subscribeRuntimeEvents
+} from "../../runtime/runtime-bridge.js";
 
 interface ConnectionPanelProps {
   readonly snapshot: RuntimeSnapshot;
+  readonly role: "player" | "scout";
+  readonly relationshipId: string;
 }
 
-export function ConnectionPanel({ snapshot }: ConnectionPanelProps) {
+type PeerConnectionStatus = Extract<
+  RuntimeEvent,
+  { readonly type: "connection.status" }
+>["payload"]["status"];
+
+export function ConnectionPanel({ snapshot, role, relationshipId }: ConnectionPanelProps) {
   const [inviteCode, setInviteCode] = useState("");
-  const [connectionStatus, setConnectionStatus] = useState<
-    | "idle"
-    | "invite_ready"
-    | "connecting"
-    | "connected"
-    | "timeout"
-    | "peer_not_found"
-    | "reconnecting"
-    | "error"
-  >("idle");
-  const [testEventStatus, setTestEventStatus] = useState<"not_sent" | "sent" | "received">(
-    "not_sent"
+  const [connectionStatus, setConnectionStatus] = useState<PeerConnectionStatus>("idle");
+  const [testEventStatus, setTestEventStatus] = useState<"not_sent" | "sent">("not_sent");
+  const [error, setError] = useState<string>();
+  const runtimeAvailable = isDesktopRuntimeAvailable();
+
+  useEffect(
+    () =>
+      subscribeRuntimeEvents((event) => {
+        if (event.type === "connection.status") {
+          setConnectionStatus(event.payload.status);
+        }
+      }),
+    []
   );
 
-  const createDemoInvite = () => {
-    setInviteCode("scoutpass:runtime-generated-invite-pending");
-    setConnectionStatus("invite_ready");
+  const createInvite = async () => {
+    setError(undefined);
+    try {
+      const event = await requestRuntime({
+        ...createRuntimeRequest(),
+        type: "connection.invite.create",
+        payload: { relationshipId }
+      });
+      if (event.type !== "connection.invite.created") {
+        throw new Error("Desktop runtime returned an unexpected invite response.");
+      }
+      setInviteCode(event.payload.inviteCode);
+      setConnectionStatus("invite_ready");
+    } catch (caught) {
+      setConnectionStatus("error");
+      setError(toMessage(caught));
+    }
   };
 
-  const connectFromInvite = () => {
-    setConnectionStatus(inviteCode.trim().startsWith("scoutpass:") ? "connecting" : "error");
+  const connectFromInvite = async () => {
+    setError(undefined);
+    setConnectionStatus("connecting");
+    try {
+      const event = await requestRuntime({
+        ...createRuntimeRequest(),
+        type: "connection.connect",
+        payload: { inviteCode }
+      });
+      if (event.type === "operation.failed") {
+        throw new Error(event.payload.message);
+      }
+    } catch (caught) {
+      setConnectionStatus("error");
+      setError(toMessage(caught));
+    }
   };
 
-  const markPeerNotFound = () => {
-    setConnectionStatus("timeout");
-    window.setTimeout(() => setConnectionStatus("peer_not_found"), 250);
+  const sendTestEvent = async () => {
+    setError(undefined);
+    try {
+      const event = await requestRuntime({
+        ...createRuntimeRequest(),
+        type: "connection.test_event.send",
+        payload: { relationshipId }
+      });
+      if (event.type === "operation.failed") {
+        throw new Error(event.payload.message);
+      }
+      setTestEventStatus("sent");
+    } catch (caught) {
+      setError(toMessage(caught));
+    }
   };
 
   return (
     <section className="panel compact-panel" aria-labelledby="connection-title">
-      <p className="eyebrow">Integration status</p>
-      <h2 id="connection-title">Pears relationship</h2>
+      <p className="eyebrow">Pears network</p>
+      <h2 id="connection-title">Scouting connection</h2>
       <div className="status-grid">
         <Status label="QVAC" value={snapshot.qvac} />
-        <Status label="Pears" value={snapshot.pears} />
+        <Status label="Pears" value={runtimeAvailable ? snapshot.pears : "desktop_required"} />
         <Status label="Wallet" value={snapshot.wallet} />
         <Status label="Connection" value={connectionStatus} />
         <Status label="Test event" value={testEventStatus} />
       </div>
       <div className="connection-actions">
-        <button type="button" className="secondary-button" onClick={createDemoInvite}>
-          Create invite
-        </button>
+        {role === "scout" ? (
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={() => void createInvite()}
+            disabled={!runtimeAvailable}
+          >
+            Create invite
+          </button>
+        ) : null}
         <label>
           Invite code
           <textarea
@@ -58,42 +121,32 @@ export function ConnectionPanel({ snapshot }: ConnectionPanelProps) {
             value={inviteCode}
             placeholder="scoutpass:..."
             onChange={(event) => setInviteCode(event.target.value)}
+            readOnly={role === "scout"}
           />
         </label>
-        <button type="button" className="primary-button" onClick={connectFromInvite}>
-          Connect
-        </button>
+        {role === "player" ? (
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => void connectFromInvite()}
+            disabled={!runtimeAvailable || inviteCode.trim().length === 0}
+          >
+            Connect
+          </button>
+        ) : null}
         <button
           type="button"
           className="secondary-button"
-          onClick={() => {
-            setConnectionStatus("connected");
-            setTestEventStatus("sent");
-          }}
+          onClick={() => void sendTestEvent()}
+          disabled={!runtimeAvailable || connectionStatus !== "connected"}
         >
           Send test event
         </button>
-        <button
-          type="button"
-          className="secondary-button"
-          onClick={() => setTestEventStatus("received")}
-        >
-          Mark received
-        </button>
-        <button type="button" className="secondary-button" onClick={markPeerNotFound}>
-          Mark peer not found
-        </button>
-        <button
-          type="button"
-          className="secondary-button"
-          onClick={() => setConnectionStatus("reconnecting")}
-        >
-          Reconnect
-        </button>
       </div>
-      <div className="notice">
-        Pears invite and test-event commands are defined for the runtime bridge.
-      </div>
+      {!runtimeAvailable ? (
+        <div className="warning">Desktop runtime required for real Pears networking.</div>
+      ) : null}
+      {error ? <p className="error">{error}</p> : null}
     </section>
   );
 }
@@ -106,3 +159,6 @@ function Status({ label, value }: { readonly label: string; readonly value: stri
     </div>
   );
 }
+
+const toMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : "The local runtime operation failed.";

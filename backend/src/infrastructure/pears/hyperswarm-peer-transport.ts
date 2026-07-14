@@ -1,4 +1,4 @@
-import { EventEmitter } from "node:events";
+import { EventEmitter, once } from "node:events";
 import { createRequire } from "node:module";
 import type { Duplex } from "node:stream";
 
@@ -25,7 +25,7 @@ interface HyperswarmLike {
   on(event: "connection" | "error" | "update", listener: (...args: unknown[]) => void): this;
   join(topic: Buffer, options: { server: boolean; client: boolean }): { flushed(): Promise<void> };
   flush(): Promise<void>;
-  destroy(): Promise<void>;
+  destroy(options?: { force?: boolean }): Promise<void>;
 }
 
 interface PeerInfoLike {
@@ -47,15 +47,9 @@ class HyperswarmConnection implements PeerConnection {
 
   public async send(event: ScoutPassEvent): Promise<void> {
     const payload = encodeScoutPassEventFrame(event);
-    await new Promise<void>((resolve, reject) => {
-      this.socket.write(payload, (error) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-        resolve();
-      });
-    });
+    if (!this.socket.write(payload)) {
+      await once(this.socket, "drain");
+    }
   }
 
   public close(): Promise<void> {
@@ -77,6 +71,7 @@ export class HyperswarmPeerTransport implements PeerTransport {
   #connection: HyperswarmConnection | undefined;
   #activeRelationshipId: string | undefined;
   #status: PearsConnectionStatus = "idle";
+  #disposing = false;
   readonly #connectionTimeoutMs: number;
   readonly #dht: unknown;
 
@@ -90,25 +85,26 @@ export class HyperswarmPeerTransport implements PeerTransport {
     );
   }
 
-  public createInvite(relationshipId: string): Promise<string> {
+  public async createInvite(relationshipId: string): Promise<string> {
     this.#activeRelationshipId = relationshipId;
     this.#setStatus("connecting");
     const topic = createRelationshipTopic(relationshipId);
     const swarm = this.#getSwarm();
     const discovery = swarm.join(topic, { server: true, client: false });
-    void discovery.flushed().catch((error: unknown) => {
+    try {
+      await discovery.flushed();
+    } catch (error) {
       this.#logger.warn("Pears invite announce did not flush.", { error });
       this.#setStatus("error");
-    });
+      throw new Error("Pears invite could not be announced.", { cause: error });
+    }
     this.#setStatus("invite_ready");
 
-    return Promise.resolve(
-      createInviteCode({
-        protocolVersion: PROTOCOL_VERSION,
-        relationshipId,
-        topicHex: topic.toString("hex")
-      })
-    );
+    return createInviteCode({
+      protocolVersion: PROTOCOL_VERSION,
+      relationshipId,
+      topicHex: topic.toString("hex")
+    });
   }
 
   public async connect(inviteCode: string): Promise<PeerConnection> {
@@ -148,9 +144,10 @@ export class HyperswarmPeerTransport implements PeerTransport {
   }
 
   public async dispose(): Promise<void> {
+    this.#disposing = true;
     await this.#connection?.close();
     this.#connection = undefined;
-    await this.#swarm?.destroy();
+    await this.#swarm?.destroy({ force: true });
     this.#swarm = undefined;
     this.#setStatus("disconnected");
   }
@@ -169,12 +166,13 @@ export class HyperswarmPeerTransport implements PeerTransport {
       const decoder = new ScoutPassEventFrameDecoder();
       const peerInfo = peerInfoLike as PeerInfoLike;
       const remotePublicKey = peerInfo.publicKey?.toString("hex");
-      this.#connection = new HyperswarmConnection(
+      const connection = new HyperswarmConnection(
         this.#activeRelationshipId ?? "relationship_unknown",
         socket,
         remotePublicKey
       );
-      this.#events.emit("connection", this.#connection);
+      this.#connection = connection;
+      this.#events.emit("connection", connection);
       this.#setStatus("connected");
 
       socket.on("data", (chunk: Buffer) => {
@@ -187,12 +185,21 @@ export class HyperswarmPeerTransport implements PeerTransport {
         }
       });
       socket.on("close", () => {
+        if (this.#connection === connection) {
+          this.#connection = undefined;
+        }
+        if (this.#disposing) {
+          return;
+        }
         this.#setStatus("disconnected");
         this.#setStatus("reconnecting");
       });
       socket.on("error", (error) => {
+        if (this.#disposing) {
+          return;
+        }
         this.#logger.warn("Pears socket error.", { error });
-        this.#setStatus("error");
+        this.#setStatus("reconnecting");
       });
     });
     swarm.on("error", (error) => {

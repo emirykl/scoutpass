@@ -154,6 +154,11 @@ h3 {
   font-weight: 750;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
 .segmented button {
   padding: 0 1rem;
   color: #9eafc2;
@@ -339,11 +344,65 @@ pre {
   color: #9eafc2;
 }
 
+.share-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.check-row,
+.approval-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 0.4rem;
+  padding: 0.7rem;
+  background: rgb(255 255 255 / 4%);
+}
+
+.check-row input,
+.approval-row input {
+  flex: 0 0 auto;
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+}
+
+.check-row span {
+  min-width: 0;
+}
+
+.check-row small {
+  margin-left: auto;
+  color: #9eafc2;
+  font-weight: 700;
+}
+
+.share-preview {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.size-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: #b9c7d8;
+}
+
+.success {
+  color: #86efac;
+  font-weight: 700;
+}
+
 @media (width <= 900px) {
   .welcome-panel,
   .workspace-grid,
   .report-grid,
-  .form-grid {
+  .form-grid,
+  .share-options {
     grid-template-columns: 1fr;
   }
 }
