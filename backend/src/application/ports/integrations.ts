@@ -8,6 +8,16 @@ import type {
 } from "../../domain/models/wallet.js";
 
 export type IntegrationStatus = "not_initialized" | "loading" | "ready" | "error";
+export type PeerConnectionStatus =
+  | "idle"
+  | "invite_ready"
+  | "connecting"
+  | "connected"
+  | "disconnected"
+  | "timeout"
+  | "peer_not_found"
+  | "reconnecting"
+  | "error";
 
 export interface LocalReportGenerator {
   getStatus(): Promise<IntegrationStatus>;
@@ -25,7 +35,9 @@ export interface PeerConnection {
 export interface PeerTransport {
   createInvite(relationshipId: string): Promise<string>;
   connect(invite: string): Promise<PeerConnection>;
+  onConnection?(listener: (connection: PeerConnection) => void): () => void;
   onEvent(listener: (event: ScoutPassEvent) => Promise<void>): () => void;
+  onStatus?(listener: (status: PeerConnectionStatus) => void): () => void;
   dispose(): Promise<void>;
 }
 

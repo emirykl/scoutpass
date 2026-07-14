@@ -39,6 +39,27 @@ export const runtimeCommandSchema = z.discriminatedUnion("type", [
   z
     .object({
       ...requestFields,
+      type: z.literal("connection.invite.create"),
+      payload: z.object({ relationshipId: idSchema }).strict()
+    })
+    .strict(),
+  z
+    .object({
+      ...requestFields,
+      type: z.literal("connection.connect"),
+      payload: z.object({ inviteCode: nonEmptyTextSchema }).strict()
+    })
+    .strict(),
+  z
+    .object({
+      ...requestFields,
+      type: z.literal("connection.test_event.send"),
+      payload: z.object({ relationshipId: idSchema }).strict()
+    })
+    .strict(),
+  z
+    .object({
+      ...requestFields,
       type: z.literal("invitation.respond"),
       payload: z
         .object({
@@ -63,6 +84,36 @@ export const runtimeEventSchema = z.discriminatedUnion("type", [
           qvac: z.enum(["not_checked", "unavailable", "ready"]),
           pears: z.enum(["not_started", "disconnected", "connected"]),
           wallet: z.enum(["not_initialized", "ready", "error"])
+        })
+        .strict()
+    })
+    .strict(),
+  z
+    .object({
+      requestId: idSchema,
+      occurredAt: isoDateTimeSchema,
+      type: z.literal("connection.invite.created"),
+      payload: z.object({ inviteCode: nonEmptyTextSchema }).strict()
+    })
+    .strict(),
+  z
+    .object({
+      requestId: idSchema,
+      occurredAt: isoDateTimeSchema,
+      type: z.literal("connection.status"),
+      payload: z
+        .object({
+          status: z.enum([
+            "idle",
+            "invite_ready",
+            "connecting",
+            "connected",
+            "disconnected",
+            "timeout",
+            "peer_not_found",
+            "reconnecting",
+            "error"
+          ])
         })
         .strict()
     })

@@ -15,7 +15,9 @@ import {
   JsonEventIdStore
 } from "../src/infrastructure/storage/json-repositories.js";
 import { resolveInstanceDataFile } from "../src/infrastructure/storage/instance-storage-path.js";
-import { createPlayer } from "./fixtures.js";
+import { PROTOCOL_VERSION } from "../src/domain/constants.js";
+import type { ProfileReceivedEvent } from "../src/domain/models/events.js";
+import { createPlayer, NOW, PUBLIC_KEY } from "./fixtures.js";
 
 const directories: string[] = [];
 
@@ -57,6 +59,32 @@ describe("local JSON storage", () => {
 
     const second = new EventDeduplicator(new JsonEventIdStore(new JsonFileStore(filePath)));
     await expect(second.accept("event_demo_001")).resolves.toBe(false);
+  });
+
+  it("stores relationship events as an append-only deduplicated history", async () => {
+    const filePath = await createDataFile();
+    const repositories = createJsonRepositories(new JsonFileStore(filePath));
+    const event: ProfileReceivedEvent = {
+      id: "event_demo_profile_received",
+      type: "profile.received",
+      senderPublicKey: PUBLIC_KEY,
+      createdAt: NOW.toISOString(),
+      protocolVersion: PROTOCOL_VERSION,
+      payload: {
+        packageId: "package_demo_001",
+        receivedAt: NOW.toISOString()
+      }
+    };
+
+    await expect(
+      repositories.relationshipEvents.append("relationship_demo_001", event)
+    ).resolves.toBe(true);
+    await expect(
+      repositories.relationshipEvents.append("relationship_demo_001", event)
+    ).resolves.toBe(false);
+    await expect(repositories.relationshipEvents.list("relationship_demo_001")).resolves.toEqual([
+      event
+    ]);
   });
 
   it("fails clearly when JSON data is corrupted", async () => {

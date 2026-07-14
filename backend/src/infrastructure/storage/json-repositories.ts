@@ -1,4 +1,9 @@
-import type { Repository, ScoutPassRepositories } from "../../application/ports/repositories.js";
+import type {
+  RelationshipEventLogRepository,
+  Repository,
+  ScoutPassRepositories
+} from "../../application/ports/repositories.js";
+import type { ScoutPassEvent } from "../../domain/models/events.js";
 import type { EventIdStore } from "../../domain/services/event-deduplicator.js";
 import type { JsonFileStore } from "./json-file-store.js";
 import type { CollectionName, LocalDataState } from "./local-data-state.js";
@@ -62,6 +67,29 @@ export class JsonEventIdStore implements EventIdStore {
   }
 }
 
+export class JsonRelationshipEventLogRepository implements RelationshipEventLogRepository {
+  public constructor(private readonly store: JsonFileStore) {}
+
+  public async append(relationshipId: string, event: ScoutPassEvent): Promise<boolean> {
+    let appended = false;
+    await this.store.update((state) => {
+      if (state.processedEventIds.includes(event.id)) {
+        return;
+      }
+      state.relationshipEvents[relationshipId] ??= [];
+      state.relationshipEvents[relationshipId].push(structuredClone(event));
+      state.processedEventIds.push(event.id);
+      appended = true;
+    });
+    return appended;
+  }
+
+  public async list(relationshipId: string): Promise<readonly ScoutPassEvent[]> {
+    const state = await this.store.read();
+    return structuredClone(state.relationshipEvents[relationshipId] ?? []);
+  }
+}
+
 export const createJsonRepositories = (store: JsonFileStore): ScoutPassRepositories => ({
   profiles: new JsonEntityRepository(store, "profiles", (entity) => entity.id),
   reports: new JsonEntityRepository(store, "reports", (entity) => entity.id),
@@ -74,5 +102,6 @@ export const createJsonRepositories = (store: JsonFileStore): ScoutPassRepositor
   ),
   invitations: new JsonEntityRepository(store, "invitations", (entity) => entity.id),
   wallets: new JsonEntityRepository(store, "wallets", (entity) => entity.id),
-  payments: new JsonEntityRepository(store, "payments", (entity) => entity.id)
+  payments: new JsonEntityRepository(store, "payments", (entity) => entity.id),
+  relationshipEvents: new JsonRelationshipEventLogRepository(store)
 });

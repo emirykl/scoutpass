@@ -15,6 +15,26 @@ describe("renderer to local runtime contracts", () => {
     ).toBe(true);
   });
 
+  it("validates Pears connection commands and status events", () => {
+    expect(
+      runtimeCommandSchema.safeParse({
+        requestId: "request_demo_002",
+        sentAt: NOW.toISOString(),
+        type: "connection.connect",
+        payload: { inviteCode: "scoutpass:abc" }
+      }).success
+    ).toBe(true);
+
+    expect(
+      runtimeEventSchema.safeParse({
+        requestId: "request_demo_002",
+        occurredAt: NOW.toISOString(),
+        type: "connection.status",
+        payload: { status: "peer_not_found" }
+      }).success
+    ).toBe(true);
+  });
+
   it("rejects unknown runtime messages", () => {
     expect(
       runtimeCommandSchema.safeParse({

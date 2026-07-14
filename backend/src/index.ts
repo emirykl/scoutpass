@@ -1,5 +1,6 @@
 export * from "./application/ports/integrations.js";
 export * from "./application/ports/repositories.js";
+export * from "./application/connections/scouting-connection-service.js";
 export * from "./application/share/create-shared-package.js";
 export * from "./contracts/index.js";
 export * from "./domain/identity.js";
@@ -18,5 +19,6 @@ export * from "./infrastructure/storage/json-repositories.js";
 export * from "./infrastructure/storage/local-data-state.js";
 export * from "./infrastructure/storage/instance-storage-path.js";
 export * from "./protocol/peer-wire.js";
+export * from "./runtime/pear-runtime-host.js";
 export * from "./runtime/index.js";
 export * from "./seed/demo-player.js";

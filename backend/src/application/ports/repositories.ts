@@ -4,6 +4,7 @@ import type { StoredScoutReport } from "../../domain/models/scout-report.js";
 import type { SharedPlayerPackage, SharePreference } from "../../domain/models/sharing.js";
 import type { TryoutInvitation } from "../../domain/models/invitation.js";
 import type { PaymentReference, WalletPublicMetadata } from "../../domain/models/wallet.js";
+import type { ScoutPassEvent } from "../../domain/models/events.js";
 
 export interface Repository<T> {
   get(id: string): Promise<T | undefined>;
@@ -21,6 +22,11 @@ export type InvitationRepository = Repository<TryoutInvitation>;
 export type WalletMetadataRepository = Repository<WalletPublicMetadata>;
 export type PaymentReferenceRepository = Repository<PaymentReference>;
 
+export interface RelationshipEventLogRepository {
+  append(relationshipId: string, event: ScoutPassEvent): Promise<boolean>;
+  list(relationshipId: string): Promise<readonly ScoutPassEvent[]>;
+}
+
 export interface ScoutPassRepositories {
   readonly profiles: PlayerProfileRepository;
   readonly reports: ScoutReportRepository;
@@ -30,4 +36,5 @@ export interface ScoutPassRepositories {
   readonly invitations: InvitationRepository;
   readonly wallets: WalletMetadataRepository;
   readonly payments: PaymentReferenceRepository;
+  readonly relationshipEvents: RelationshipEventLogRepository;
 }

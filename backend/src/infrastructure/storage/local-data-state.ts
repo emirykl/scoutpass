@@ -8,6 +8,7 @@ import { scoutingRelationshipSchema } from "../../domain/models/relationship.js"
 import { storedScoutReportSchema } from "../../domain/models/scout-report.js";
 import { sharedPlayerPackageSchema, sharePreferenceSchema } from "../../domain/models/sharing.js";
 import { paymentReferenceSchema, walletPublicMetadataSchema } from "../../domain/models/wallet.js";
+import { scoutPassEventSchema } from "../../domain/models/events.js";
 
 export const localDataStateSchema = z
   .object({
@@ -21,6 +22,7 @@ export const localDataStateSchema = z
     invitations: z.record(z.string(), tryoutInvitationSchema),
     wallets: z.record(z.string(), walletPublicMetadataSchema),
     payments: z.record(z.string(), paymentReferenceSchema),
+    relationshipEvents: z.record(z.string(), z.array(scoutPassEventSchema)),
     processedEventIds: z.array(z.string().min(3).max(128))
   })
   .strict();
@@ -42,5 +44,6 @@ export const createEmptyLocalDataState = (now = new Date()): LocalDataState => (
   invitations: {},
   wallets: {},
   payments: {},
+  relationshipEvents: {},
   processedEventIds: []
 });

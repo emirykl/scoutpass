@@ -7,9 +7,11 @@ import {
   createRelationshipTopic,
   decodeScoutPassEvent,
   encodeScoutPassEvent,
+  encodeScoutPassEventFrame,
   MAX_P2P_PAYLOAD_BYTES,
   parseInviteCode,
-  PeerPayloadValidationError
+  PeerPayloadValidationError,
+  ScoutPassEventFrameDecoder
 } from "../src/protocol/peer-wire.js";
 import { NOW, PUBLIC_KEY } from "./fixtures.js";
 
@@ -43,6 +45,24 @@ describe("Pears wire protocol", () => {
 
   it("round-trips validated events", () => {
     expect(decodeScoutPassEvent(encodeScoutPassEvent(event))).toEqual(event);
+  });
+
+  it("decodes split and concatenated stream frames", () => {
+    const decoder = new ScoutPassEventFrameDecoder();
+    const firstFrame = encodeScoutPassEventFrame(event);
+    const secondEvent: ProfileReceivedEvent = {
+      ...event,
+      id: "event_demo_wire_002"
+    };
+    const secondFrame = encodeScoutPassEventFrame(secondEvent);
+
+    expect(decoder.push(firstFrame.slice(0, 3))).toEqual([]);
+    expect(decoder.push(firstFrame.slice(3))).toEqual([event]);
+
+    const both = new Uint8Array(firstFrame.byteLength + secondFrame.byteLength);
+    both.set(firstFrame);
+    both.set(secondFrame, firstFrame.byteLength);
+    expect(new ScoutPassEventFrameDecoder().push(both)).toEqual([event, secondEvent]);
   });
 
   it("rejects unknown event types and malformed payloads", () => {
