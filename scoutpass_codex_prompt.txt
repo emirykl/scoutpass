@@ -1,0 +1,989 @@
+# Project: ScoutPass
+
+Build a working MVP for **ScoutPass**, a privacy-first football scouting and tryout platform that connects amateur football players with professional clubs and scouts.
+
+ScoutPass allows amateur players to create an AI-generated scouting profile on their own device, selectively share that profile directly with a scout through a peer-to-peer connection, receive a tryout invitation, and optionally receive USD₮ travel support through a self-custodial wallet.
+
+The project must use all three Tether Developers Cup technologies in a meaningful and connected workflow:
+
+- **QVAC** for local AI analysis
+- **Pears Stack** for peer-to-peer profile sharing
+- **WDK** for self-custodial USD₮ payments
+
+The main product flow must be:
+
+Player performance data
+        ↓
+QVAC generates a private scouting report
+        ↓
+Player selects which data to share
+        ↓
+Pears transfers the report directly to the scout
+        ↓
+Scout sends a tryout invitation
+        ↓
+WDK sends optional USD₮ travel support to the player
+
+The application must not use cloud AI. Player performance data and AI prompts must remain on the user’s device.
+
+# 1. Product problem
+
+Many talented amateur football players struggle to reach professional scouts.
+
+Current scouting workflows often depend on:
+
+- Social media messages
+- Public highlight videos
+- Centralized scouting platforms
+- Unstructured PDF documents
+- Personal connections
+- Unverified tryout invitations
+
+Players usually lose control of their data after sharing it. Scouts also receive inconsistent player profiles that are difficult to compare.
+
+ScoutPass solves this by creating a standardized, player-controlled scouting profile.
+
+The player owns the profile, chooses which information to share, and communicates directly with the scout without uploading the profile to a central scouting database.
+
+# 2. Target users
+
+## Player
+
+An amateur or semi-professional football player who wants to present performance information to scouts and clubs.
+
+The player can:
+
+- Create a local profile
+- Enter performance data
+- Generate an AI scouting report
+- Review and edit the report
+- Select which report sections are shared
+- Connect directly with a scout
+- Receive a tryout invitation
+- Receive optional USD₮ travel support
+
+## Scout
+
+A scout, coach or club representative who wants to review standardized player profiles.
+
+The scout can:
+
+- Connect to a player through a Pears invite
+- Receive selected player information
+- Review the AI-generated report
+- Add private evaluation notes
+- Send a tryout invitation
+- Add optional travel support
+- Send USD₮ through WDK
+
+# 3. MVP scope
+
+The MVP must focus on one complete and working user journey.
+
+Do not build a large social network or a public scouting marketplace.
+
+The MVP must include:
+
+1. Player profile creation
+2. Performance information form
+3. Local AI scouting report generation
+4. Selective report sharing
+5. Pears P2P connection between player and scout
+6. P2P tryout invitation
+7. WDK wallet creation or connection
+8. Test USD₮ travel-support payment
+9. Local activity history
+
+# 4. Player profile
+
+Create a player profile form containing:
+
+## Personal football information
+
+- Full name
+- Age
+- Country
+- City
+- Current team
+- Primary position
+- Secondary position
+- Dominant foot
+- Height
+- Preferred playing style
+- Career objective
+
+The MVP should be limited to users aged 18 or above.
+
+Do not collect sensitive identity documents.
+
+## Performance information
+
+- Matches played
+- Minutes played
+- Goals
+- Assists
+- Pass completion percentage
+- Tackles per match
+- Interceptions per match
+- Shots on target
+- Clean sheets when applicable
+- Yellow cards
+- Red cards
+- Availability
+- Training frequency
+
+Some fields should change depending on the selected position.
+
+For example:
+
+### Goalkeeper
+
+- Saves
+- Save percentage
+- Clean sheets
+- Crosses claimed
+- Distribution accuracy
+
+### Defender
+
+- Tackles
+- Interceptions
+- Clearances
+- Aerial duels
+- Passing accuracy
+
+### Midfielder
+
+- Pass completion
+- Key passes
+- Assists
+- Ball recoveries
+- Chances created
+
+### Forward
+
+- Goals
+- Shots
+- Shots on target
+- Assists
+- Successful dribbles
+
+## Qualitative information
+
+- Strongest qualities
+- Areas the player wants to improve
+- Coach feedback
+- Preferred formation
+- Match experience
+- Short personal statement
+
+The application must clearly state that self-entered statistics are not independently verified.
+
+# 5. QVAC integration
+
+Use the official QVAC JavaScript or TypeScript SDK.
+
+Do not use:
+
+- OpenAI API
+- Anthropic API
+- Gemini API
+- Hosted inference APIs
+- Any fallback cloud AI service
+
+The QVAC integration must transform the player’s structured statistics and written notes into a standardized scouting report.
+
+## Expected report structure
+
+interface ScoutReport {
+  playerSummary: string;
+  positionalProfile: string;
+  strengths: ReportItem[];
+  developmentAreas: ReportItem[];
+  playingStyle: string;
+  suitableSystems: string[];
+  scoutQuestions: string[];
+  dataLimitations: string[];
+  generatedAt: string;
+  modelInfo: string;
+}
+
+interface ReportItem {
+  title: string;
+  explanation: string;
+  evidence: string[];
+  confidence: "low" | "medium" | "high";
+}
+
+## QVAC responsibilities
+
+QVAC should:
+
+- Summarize the player profile
+- Interpret statistics according to position
+- Combine statistics with coach notes
+- Identify potential strengths
+- Identify possible development areas
+- Describe the player’s playing style
+- Suggest tactical systems that may fit the player
+- Generate questions a scout should ask
+- Explain the limitations of the available data
+
+QVAC must not:
+
+- Claim the player will become professional
+- Produce medical advice
+- Diagnose injury risk
+- Present self-entered data as verified
+- Make final recruitment decisions
+- Automatically rank players by human value
+
+## Required report disclaimer
+
+This report is generated from information provided by the player. It is intended to support human scouting and does not verify performance claims or replace professional evaluation.
+
+## Reliability requirement
+
+Ask QVAC to return valid structured JSON.
+
+Validate the output with a schema such as Zod.
+
+When the generated response is invalid:
+
+- Retry local generation once
+- Show a clear error if it still fails
+- Never fabricate a completed report
+
+# 6. Selective sharing
+
+After the report is generated, allow the player to choose which sections can be shared.
+
+Selectable sections:
+
+- Basic player profile
+- Contact information
+- Statistics
+- Player summary
+- Strengths
+- Development areas
+- Playing style
+- Coach notes
+- Scout questions
+
+All sections should be disabled by default except:
+
+- Basic football profile
+- Player summary
+- Strengths
+
+Show a preview of the exact package that will be sent.
+
+Create a sanitized share object that contains only selected fields.
+
+Never send the full local player record automatically.
+
+Example:
+
+interface SharedPlayerPackage {
+  packageId: string;
+  playerPublicKey: string;
+  selectedProfileFields: Record<string, unknown>;
+  selectedReportSections: Partial<ScoutReport>;
+  createdAt: string;
+  expiresAt?: string;
+  schemaVersion: string;
+}
+
+# 7. Pears Stack integration
+
+Use Pears Stack for all networking.
+
+Do not use:
+
+- Firebase
+- Supabase
+- Socket.io
+- WebSocket backend
+- Plain WebRTC
+- Central REST backend for player-scout communication
+
+## Pears responsibilities
+
+Use Pears for:
+
+- Peer discovery
+- Secure player-scout connection
+- Sharing the selected player package
+- Sending tryout invitations
+- Sending invitation acceptance or rejection
+- Synchronizing message status
+- Maintaining a local communication history
+
+Recommended building blocks:
+
+- Hyperswarm for peer discovery and connection
+- Hypercore for append-only event records
+- Corestore for local core management
+- Autobase only when multi-writer synchronization is genuinely needed
+
+Do not use Pears merely for a chat box.
+
+The primary P2P object is the scouting relationship and its event history.
+
+## P2P event model
+
+type ScoutPassEvent =
+  | PlayerProfileSharedEvent
+  | ProfileReceivedEvent
+  | TryoutInvitationEvent
+  | InvitationResponseEvent
+  | TravelSupportProposedEvent
+  | TravelSupportSentEvent;
+
+interface BaseEvent {
+  id: string;
+  type: string;
+  senderPublicKey: string;
+  createdAt: string;
+  protocolVersion: string;
+}
+
+## Connection flow
+
+1. Scout selects “Create scouting connection.”
+2. The scout application creates an invite code or connection key.
+3. The player enters or scans the invite.
+4. Both peers connect through Hyperswarm.
+5. The player previews the selected report package.
+6. The player explicitly approves sharing.
+7. The package transfers directly to the scout.
+8. The scout stores the received package locally.
+9. The scout sends a tryout invitation through the same P2P relationship.
+
+## Privacy requirements
+
+- Do not publish profiles to a public swarm.
+- Use a unique topic or invitation per player-scout relationship.
+- Validate all incoming messages.
+- Add payload size limits.
+- Reject unknown event types.
+- Do not execute code received from peers.
+- Do not expose private keys in logs.
+- Store data locally.
+
+# 8. Tryout invitation
+
+The scout must be able to create an invitation containing:
+
+- Club or organization name
+- Scout name
+- Trial title
+- Date
+- Start time
+- End time
+- City
+- Venue
+- Position being evaluated
+- Instructions
+- Contact details
+- Optional travel-support amount
+- Payment asset
+- Invitation expiration date
+
+The player can:
+
+- Accept
+- Decline
+- Request clarification
+
+For the MVP, do not build calendar integration.
+
+Show a clear invitation status:
+
+Draft
+Sent
+Received
+Accepted
+Declined
+Expired
+Travel support sent
+
+# 9. WDK integration
+
+Use Tether WDK for self-custodial wallet functionality.
+
+## WDK responsibilities
+
+The scout should be able to:
+
+- Create or initialize a self-custodial wallet
+- View the wallet address
+- View test balance
+- Enter a travel-support amount
+- Review transaction details
+- Confirm and sign the payment
+- Send supported test USD₮ to the player
+- Display transaction status and identifier
+
+The player should be able to:
+
+- Create or initialize a self-custodial wallet
+- Share a receive address
+- View the incoming test payment
+- Associate the payment with the tryout invitation
+
+Use a supported WDK test network and test assets.
+
+Do not use real money for the hackathon demo.
+
+Display a visible “Testnet only” label throughout the payment flow.
+
+## Important wallet rules
+
+- Never log seed phrases or private keys.
+- Never commit wallet secrets.
+- Never send private keys through Pears.
+- Never store secrets in plain-text application state.
+- Never automatically send a transaction.
+- Require explicit user confirmation.
+- Display network, destination, asset and amount before signing.
+- Do not claim the payment is escrowed.
+- Do not claim that payment verifies the scout or club.
+
+For the MVP, the payment is an optional travel grant sent after the player accepts the invitation.
+
+It is not:
+
+- A tryout fee
+- A gambling payment
+- A recruitment guarantee
+- A legally binding contract
+- An escrow arrangement
+
+# 10. Connected three-stack workflow
+
+The three integrations must form one coherent product flow.
+
+Correct integration:
+
+QVAC
+Generates the private and standardized player report.
+
+Pears
+Lets the player share selected report sections directly with a scout.
+
+WDK
+Lets the scout send optional self-custodial travel support after issuing a tryout invitation.
+
+Incorrect integration:
+
+Do not create three unrelated tabs where:
+
+- QVAC is a generic chatbot
+- Pears is an empty chat room
+- WDK is a disconnected wallet page
+
+Every integration must be visible in the same user journey.
+
+# 11. Recommended technology stack
+
+Use TypeScript throughout the project.
+
+Recommended architecture:
+
+ScoutPass
+├── apps
+│   └── desktop
+│       ├── renderer
+│       ├── main
+│       └── pear-worker
+│
+├── packages
+│   ├── domain
+│   ├── qvac
+│   ├── pears
+│   ├── wdk
+│   ├── storage
+│   ├── validation
+│   └── ui
+│
+├── docs
+│   ├── architecture.md
+│   ├── privacy.md
+│   ├── threat-model.md
+│   └── demo-script.md
+│
+├── README.md
+├── LICENSE
+└── package.json
+
+## Frontend
+
+Preferred:
+
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- React Hook Form
+- Zod
+- Zustand or a simple state layer
+
+## Runtime
+
+Prefer a desktop MVP because local AI, Pears and WDK integration may be easier to demonstrate reliably on desktop.
+
+Use:
+
+- Pear desktop runtime or Electron shell compatible with Pear architecture
+- Bare worker for Pears networking
+- Local filesystem or a lightweight local database
+
+## Local storage
+
+Use:
+
+- SQLite, or
+- Structured JSON with an explicit repository abstraction
+
+Store:
+
+- Player profile
+- Generated reports
+- Share preferences
+- Received profiles
+- Invitations
+- Wallet public metadata
+- Payment references
+
+Do not store private wallet material in the normal application database.
+
+# 12. Application screens
+
+## Shared screens
+
+### Welcome
+
+- Product explanation
+- Choose role: Player or Scout
+- Privacy summary
+- Testnet warning
+
+### Settings
+
+- Local model status
+- Pears connection status
+- Wallet network
+- Clear local data
+- Export non-sensitive debug information
+
+## Player screens
+
+### Player dashboard
+
+- Profile completion
+- Latest report
+- Active scout connections
+- Invitations
+- Travel-support payments
+
+### Profile editor
+
+- Football information
+- Statistics
+- Written notes
+
+### Generate report
+
+- Data preview
+- QVAC model status
+- Generate button
+- Progress indicator
+- Error state
+
+### Scout report
+
+- Structured report sections
+- Evidence and confidence indicators
+- Edit or regenerate
+- Disclaimer
+
+### Share report
+
+- Section checkboxes
+- Exact payload preview
+- Invite code input
+- Explicit share confirmation
+
+### Invitations
+
+- Invitation details
+- Accept
+- Decline
+- Payment status
+
+### Wallet
+
+- Public address
+- Test balance
+- Incoming payment history
+
+## Scout screens
+
+### Scout dashboard
+
+- Received player profiles
+- Pending invitations
+- Travel-support history
+
+### Connection screen
+
+- Generate invite
+- Copy invite
+- Connection status
+
+### Player review
+
+- Shared profile only
+- Scout report
+- Private scout notes
+- Data limitation warning
+
+### Create invitation
+
+- Trial details form
+- Optional travel support
+
+### Payment review
+
+- Player address
+- Asset
+- Network
+- Amount
+- Confirm transaction
+
+# 13. UX principles
+
+The application should feel professional and trustworthy.
+
+Avoid crypto-heavy visual design.
+
+Do not make it look like:
+
+- A betting application
+- A token dashboard
+- A speculative marketplace
+- A generic AI chatbot
+
+Use a modern scouting and football operations style.
+
+Recommended UI principles:
+
+- Dark navy or neutral background
+- High-contrast cards
+- Clear football profile sections
+- Minimal wallet jargon
+- Clear status indicators
+- Strong privacy explanations
+- Large primary actions
+- Responsive desktop layout
+
+The most important journey should require minimal navigation:
+
+Create profile
+→ Generate report
+→ Select information
+→ Share with scout
+→ Receive invitation
+→ Receive support
+
+# 14. Error handling
+
+Implement visible error states for:
+
+- QVAC model not installed
+- Model loading failure
+- Invalid AI output
+- Pear peer not found
+- Connection timeout
+- Malformed incoming P2P message
+- Expired invitation
+- WDK wallet initialization failure
+- Insufficient test balance
+- Transaction rejection
+- Transaction pending
+- Transaction failure
+
+Never show a fake success state.
+
+Use demo mode only for sample profile data, not for simulating integrations.
+
+# 15. Security requirements
+
+Create a basic threat model.
+
+Consider:
+
+- Malicious P2P payloads
+- Oversized messages
+- Fake scout identities
+- Self-reported player statistics
+- Accidental oversharing
+- Wallet secret exposure
+- Replay of invitation events
+- Duplicate payment attempts
+- Corrupted local data
+
+Mitigations:
+
+- Runtime validation with Zod
+- Event IDs and deduplication
+- Protocol version field
+- Payload limits
+- Explicit sharing confirmation
+- Local-only AI
+- No automatic transactions
+- Testnet-only payments
+- Clear unverified-data warning
+- Sanitized logs
+- No secrets in source control
+
+Do not claim that ScoutPass fully verifies clubs, scouts or player performance in the MVP.
+
+# 16. Seed data
+
+Provide demo seed profiles.
+
+Example player:
+
+const demoPlayer = {
+  fullName: "Emir Yenikale",
+  age: 22,
+  country: "Türkiye",
+  city: "İzmir",
+  currentTeam: "Independent Amateur Player",
+  primaryPosition: "Right Winger",
+  secondaryPosition: "Attacking Midfielder",
+  dominantFoot: "Right",
+  heightCm: 178,
+  matchesPlayed: 18,
+  minutesPlayed: 1260,
+  goals: 7,
+  assists: 6,
+  passCompletion: 81,
+  shotsOnTarget: 24,
+  successfulDribblesPerMatch: 3.1,
+  trainingFrequencyPerWeek: 4,
+  strengths:
+    "Acceleration, off-ball runs, creating space and one-versus-one situations.",
+  developmentGoals:
+    "Improve final-pass consistency and defensive positioning.",
+  coachFeedback:
+    "Creates attacking opportunities and makes frequent runs behind the defensive line."
+};
+
+Clearly mark it as demonstration data.
+
+# 17. MVP acceptance criteria
+
+The MVP is complete only when this end-to-end flow works:
+
+1. A player creates or loads a profile.
+2. QVAC generates a scouting report locally.
+3. The report passes schema validation.
+4. The player selects report sections.
+5. A scout creates a Pears invite.
+6. The player connects using the invite.
+7. The selected report transfers to the scout.
+8. The scout views the received report.
+9. The scout sends a tryout invitation.
+10. The player accepts the invitation.
+11. The scout reviews a test USD₮ payment.
+12. The scout explicitly signs the WDK transaction.
+13. The player sees the transaction status.
+14. The application displays no cloud AI dependency.
+
+# 18. Testing requirements
+
+Add:
+
+## Unit tests
+
+- Position-specific performance calculations
+- Report schema validation
+- Share-package sanitization
+- P2P event validation
+- Event deduplication
+- Invitation state transitions
+- Payment amount validation
+
+## Integration tests
+
+- QVAC response parsing
+- Pears event serialization and deserialization
+- Player-to-scout package transfer
+- Invitation delivery
+- WDK transaction preparation
+
+## Manual test checklist
+
+- Start two application instances
+- Connect player and scout
+- Disconnect and reconnect
+- Reject malformed messages
+- Generate a report offline
+- Share only selected sections
+- Reject a wallet transaction
+- Retry a failed transaction
+
+# 19. README requirements
+
+Create a high-quality README containing:
+
+- Project overview
+- Problem statement
+- Why ScoutPass matters
+- How QVAC is used
+- How Pears is used
+- How WDK is used
+- Architecture diagram
+- Setup requirements
+- Installation steps
+- Local model setup
+- Pears setup
+- Testnet wallet setup
+- How to run player and scout instances
+- Demo instructions
+- Security limitations
+- Current MVP limitations
+- Future roadmap
+- Open-source license
+
+Use MIT or Apache 2.0.
+
+Do not write setup instructions until commands have been tested.
+
+# 20. Future roadmap
+
+Do not implement these features in the first MVP unless all acceptance criteria already work.
+
+## Phase 2: Video-assisted scouting
+
+QVAC will process football videos locally to:
+
+- Detect candidate highlight moments
+- Separate player clips
+- Tag passes, shots and defensive actions
+- Create short highlight reels
+- Compare repeated training tests
+- Generate video-supported scouting summaries
+
+Do not claim automatic professional-grade video analysis in the MVP.
+
+## Phase 3: Verifiable performance data
+
+Potential integrations:
+
+- Coach-signed statistics
+- Club-issued match records
+- Tournament data imports
+- Wearable device data
+- Cryptographic signatures for submitted records
+
+This can reduce dependence on self-reported data.
+
+## Phase 4: Private player-club matching
+
+QVAC can compare:
+
+- Club requirements
+- Player position
+- Playing style
+- Location preferences
+- Development goals
+
+Matching should remain explainable and should not automatically reject players.
+
+## Phase 5: Scout and club verification
+
+Possible features:
+
+- Verified organization profiles
+- Signed scout credentials
+- Community reputation
+- Invitation history
+- Reporting and blocking
+
+## Phase 6: Player-controlled data permissions
+
+Add:
+
+- Expiring shares
+- Revocable access
+- One-time report links
+- Different report versions for different clubs
+- Audit history showing what was shared
+
+## Phase 7: Tryout support programs
+
+WDK could support:
+
+- Travel grants
+- Accommodation support
+- Training scholarships
+- Community-sponsored player funds
+- Transparent amateur-club development contributions
+
+Avoid turning the product into a pay-to-play recruitment platform.
+
+# 21. Product positioning
+
+Use this short description:
+
+ScoutPass is a private, player-owned scouting and tryout platform for grassroots football. QVAC turns player performance data into an on-device scouting report, Pears lets players share selected information directly with scouts, and WDK enables optional self-custodial USD₮ travel support for real tryout opportunities.
+
+Use this tagline:
+
+Own your game. Share your potential.
+
+Alternative:
+
+Talent should travel. Data should not.
+
+# 22. Development order
+
+Follow this order strictly:
+
+Step 1:
+Create the domain models, forms and local storage.
+
+Step 2:
+Implement QVAC local report generation with schema validation.
+
+Step 3:
+Build Pears connection and transfer a simple validated test object between two app instances.
+
+Step 4:
+Transfer the real selected scouting package.
+
+Step 5:
+Implement tryout invitations through Pears.
+
+Step 6:
+Integrate WDK wallet initialization and test balance display.
+
+Step 7:
+Implement reviewed and user-confirmed test USD₮ payment.
+
+Step 8:
+Connect all screens into one complete demo flow.
+
+Step 9:
+Add tests, error handling and security checks.
+
+Step 10:
+Finish README, architecture documentation and demo script.
+
+Do not prioritize visual polish until QVAC, Pears and WDK work end to end.
+
+Before using SDK methods, inspect the currently installed versions and official documentation. Do not invent package names, functions or transaction methods. Isolate each integration behind an adapter interface so SDK changes can be handled without changing the rest of the application.

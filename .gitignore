@@ -1,0 +1,39 @@
+# Dependencies and build output
+node_modules/
+dist/
+coverage/
+.vite/
+
+# Local environment and logs
+.env
+.env.*
+!.env.example
+*.log
+npm-debug.log*
+
+# Local ScoutPass data
+.scoutpass/
+data/
+local-data/
+debug-export/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Models are downloaded locally and must not be committed
+models/
+*.gguf
+*.bin
+
+# Wallet secrets must never enter source control
+wallet-secrets/
+wallet-keystore/
+*.seed
+*.mnemonic
+*.key
+
+# OS and editor metadata
+.DS_Store
+.idea/
+.vscode/
+*.swp
