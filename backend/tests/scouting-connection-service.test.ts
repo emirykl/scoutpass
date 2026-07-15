@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { ScoutingConnectionService } from "../src/application/connections/scouting-connection-service.js";
+import { TryoutInvitationService } from "../src/application/invitations/tryout-invitation-service.js";
+import { WalletAddressSharingService } from "../src/application/wallet/wallet-address-sharing-service.js";
 import {
   preparePlayerShare,
   ProfileSharingService
@@ -12,12 +14,16 @@ import type {
 } from "../src/application/ports/integrations.js";
 import type {
   RelationshipEventLogRepository,
-  SharedPackageRepository
+  InvitationRepository,
+  SharedPackageRepository,
+  WalletMetadataRepository
 } from "../src/application/ports/repositories.js";
 import type { ScoutPassEvent } from "../src/domain/models/events.js";
+import type { TryoutInvitation } from "../src/domain/models/invitation.js";
 import type { SharedPlayerPackage } from "../src/domain/models/sharing.js";
 import { DEFAULT_SHARE_SELECTION } from "../src/domain/models/sharing.js";
-import { createPlayer, createReport, NOW, PUBLIC_KEY } from "./fixtures.js";
+import type { WalletPublicMetadata } from "../src/domain/models/wallet.js";
+import { createInvitation, createPlayer, createReport, NOW, PUBLIC_KEY } from "./fixtures.js";
 
 class InMemoryEventLog implements RelationshipEventLogRepository {
   readonly events = new Map<string, ScoutPassEvent[]>();
@@ -134,6 +140,50 @@ class InMemoryPackageRepository implements SharedPackageRepository {
   }
 }
 
+class InMemoryInvitationRepository implements InvitationRepository {
+  readonly #invitations = new Map<string, TryoutInvitation>();
+
+  public get(id: string): Promise<TryoutInvitation | undefined> {
+    const value = this.#invitations.get(id);
+    return Promise.resolve(value === undefined ? undefined : structuredClone(value));
+  }
+
+  public list(): Promise<readonly TryoutInvitation[]> {
+    return Promise.resolve([...this.#invitations.values()].map((value) => structuredClone(value)));
+  }
+
+  public save(entity: TryoutInvitation): Promise<void> {
+    this.#invitations.set(entity.id, structuredClone(entity));
+    return Promise.resolve();
+  }
+
+  public delete(id: string): Promise<boolean> {
+    return Promise.resolve(this.#invitations.delete(id));
+  }
+}
+
+class InMemoryWalletRepository implements WalletMetadataRepository {
+  readonly #wallets = new Map<string, WalletPublicMetadata>();
+
+  public get(id: string): Promise<WalletPublicMetadata | undefined> {
+    const value = this.#wallets.get(id);
+    return Promise.resolve(value === undefined ? undefined : structuredClone(value));
+  }
+
+  public list(): Promise<readonly WalletPublicMetadata[]> {
+    return Promise.resolve([...this.#wallets.values()].map((value) => structuredClone(value)));
+  }
+
+  public save(entity: WalletPublicMetadata): Promise<void> {
+    this.#wallets.set(entity.id, structuredClone(entity));
+    return Promise.resolve();
+  }
+
+  public delete(id: string): Promise<boolean> {
+    return Promise.resolve(this.#wallets.delete(id));
+  }
+}
+
 describe("scouting connection service", () => {
   it("sends validated test events both ways and stores deduplicated history", async () => {
     const scoutTransport = new LinkedTransport();
@@ -231,6 +281,121 @@ describe("scouting connection service", () => {
           event.payload.packageId === prepared.package.packageId
       )
     ).toHaveLength(1);
+
+    scoutSharing.dispose();
+    playerSharing.dispose();
+  });
+
+  it("delivers a tryout invitation and returns the accepted response over P2P", async () => {
+    const scoutTransport = new LinkedTransport();
+    const playerTransport = new LinkedTransport();
+    scoutTransport.peer = playerTransport;
+    playerTransport.peer = scoutTransport;
+    const scoutLog = new InMemoryEventLog();
+    const playerLog = new InMemoryEventLog();
+    const scoutConnection = new ScoutingConnectionService({
+      transport: scoutTransport,
+      eventLog: scoutLog,
+      senderPublicKey: "b".repeat(64),
+      now: () => NOW
+    });
+    const playerConnection = new ScoutingConnectionService({
+      transport: playerTransport,
+      eventLog: playerLog,
+      senderPublicKey: PUBLIC_KEY,
+      now: () => NOW
+    });
+    const scoutInvitations = new InMemoryInvitationRepository();
+    const playerInvitations = new InMemoryInvitationRepository();
+    const scoutService = new TryoutInvitationService({
+      connectionService: scoutConnection,
+      invitations: scoutInvitations,
+      senderPublicKey: "b".repeat(64),
+      now: () => NOW
+    });
+    const playerService = new TryoutInvitationService({
+      connectionService: playerConnection,
+      invitations: playerInvitations,
+      senderPublicKey: PUBLIC_KEY,
+      now: () => NOW
+    });
+
+    const invite = await scoutConnection.createInvite("relationship_demo_001");
+    await playerConnection.connect(invite);
+    const draft = createInvitation();
+    await scoutService.saveDraft(draft);
+    await scoutService.sendDraft(draft);
+    expect(await playerInvitations.get(draft.id)).toMatchObject({ status: "received" });
+
+    await playerService.respond(draft.id, "accepted");
+    const scoutInvitation = await scoutInvitations.get(draft.id);
+    const playerInvitation = await playerInvitations.get(draft.id);
+    expect(scoutInvitation).toMatchObject({ status: "accepted" });
+    expect(playerInvitation).toMatchObject({ status: "accepted" });
+    expect(scoutInvitation && scoutService.canStartTravelSupport(scoutInvitation)).toBe(true);
+    expect(JSON.stringify(await scoutLog.list(draft.relationshipId))).not.toContain(
+      "private scout assessment"
+    );
+    expect((await scoutLog.list(draft.relationshipId)).map((event) => event.type)).toEqual([
+      "tryout.invitation",
+      "invitation.response"
+    ]);
+
+    scoutService.dispose();
+    playerService.dispose();
+  });
+
+  it("shares only approved public player wallet metadata", async () => {
+    const scoutTransport = new LinkedTransport();
+    const playerTransport = new LinkedTransport();
+    scoutTransport.peer = playerTransport;
+    playerTransport.peer = scoutTransport;
+    const scoutConnection = new ScoutingConnectionService({
+      transport: scoutTransport,
+      eventLog: new InMemoryEventLog(),
+      senderPublicKey: "b".repeat(64),
+      now: () => NOW
+    });
+    const playerConnection = new ScoutingConnectionService({
+      transport: playerTransport,
+      eventLog: new InMemoryEventLog(),
+      senderPublicKey: PUBLIC_KEY,
+      now: () => NOW
+    });
+    const scoutWallets = new InMemoryWalletRepository();
+    const playerWallets = new InMemoryWalletRepository();
+    const scoutSharing = new WalletAddressSharingService({
+      connectionService: scoutConnection,
+      wallets: scoutWallets,
+      senderPublicKey: "b".repeat(64),
+      now: () => NOW
+    });
+    const playerSharing = new WalletAddressSharingService({
+      connectionService: playerConnection,
+      wallets: playerWallets,
+      senderPublicKey: PUBLIC_KEY,
+      now: () => NOW
+    });
+    const wallet: WalletPublicMetadata = {
+      id: "wallet_player_ethereum_sepolia",
+      ownerRole: "player",
+      network: "Ethereum Sepolia",
+      chainId: 11155111,
+      address: `0x${"1".repeat(40)}`,
+      testnetOnly: true,
+      createdAt: NOW.toISOString(),
+      updatedAt: NOW.toISOString()
+    };
+
+    const invite = await scoutConnection.createInvite("relationship_demo_001");
+    await playerConnection.connect(invite);
+    await expect(
+      playerSharing.shareAddress("relationship_demo_001", wallet, false)
+    ).rejects.toThrow("approval is required");
+    await playerSharing.shareAddress("relationship_demo_001", wallet, true);
+
+    expect(await scoutWallets.get(wallet.id)).toEqual(wallet);
+    expect(JSON.stringify(await scoutWallets.list())).not.toContain("seed");
 
     scoutSharing.dispose();
     playerSharing.dispose();

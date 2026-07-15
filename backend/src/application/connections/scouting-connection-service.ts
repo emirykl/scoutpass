@@ -109,6 +109,8 @@ const inferRelationshipId = (event: ScoutPassEvent, fallbackRelationshipId?: str
       return event.payload.invitation.relationshipId;
     case "invitation.response":
       return fallbackRelationshipId ?? "relationship_from_invitation_response";
+    case "wallet.address_shared":
+      return fallbackRelationshipId ?? "relationship_from_wallet_address";
     case "travel_support.proposed":
       return event.payload.proposal.relationshipId;
     case "travel_support.sent":

@@ -2,7 +2,7 @@ import type { PlayerProfile } from "../../domain/models/player-profile.js";
 import type { ScoutingRelationship } from "../../domain/models/relationship.js";
 import type { StoredScoutReport } from "../../domain/models/scout-report.js";
 import type { SharedPlayerPackage, SharePreference } from "../../domain/models/sharing.js";
-import type { TryoutInvitation } from "../../domain/models/invitation.js";
+import type { ScoutPrivateNote, TryoutInvitation } from "../../domain/models/invitation.js";
 import type { PaymentReference, WalletPublicMetadata } from "../../domain/models/wallet.js";
 import type { ScoutPassEvent } from "../../domain/models/events.js";
 
@@ -19,6 +19,7 @@ export type SharePreferenceRepository = Repository<SharePreference>;
 export type RelationshipRepository = Repository<ScoutingRelationship>;
 export type SharedPackageRepository = Repository<SharedPlayerPackage>;
 export type InvitationRepository = Repository<TryoutInvitation>;
+export type ScoutPrivateNoteRepository = Repository<ScoutPrivateNote>;
 export type WalletMetadataRepository = Repository<WalletPublicMetadata>;
 export type PaymentReferenceRepository = Repository<PaymentReference>;
 
@@ -34,6 +35,7 @@ export interface ScoutPassRepositories {
   readonly relationships: RelationshipRepository;
   readonly receivedPackages: SharedPackageRepository;
   readonly invitations: InvitationRepository;
+  readonly scoutPrivateNotes: ScoutPrivateNoteRepository;
   readonly wallets: WalletMetadataRepository;
   readonly payments: PaymentReferenceRepository;
   readonly relationshipEvents: RelationshipEventLogRepository;

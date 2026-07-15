@@ -48,3 +48,9 @@ export interface WalletGateway {
   confirmAndSend(proposal: PaymentProposal): Promise<PaymentReference>;
   dispose(): Promise<void>;
 }
+
+export interface WalletSecretStore {
+  get(secretId: string): Promise<string | undefined>;
+  set(secretId: string, value: string): Promise<void>;
+  delete(secretId: string): Promise<boolean>;
+}

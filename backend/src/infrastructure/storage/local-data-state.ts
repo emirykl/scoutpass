@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { SCHEMA_VERSION } from "../../domain/constants.js";
 import { isoDateTimeSchema } from "../../domain/models/common.js";
-import { tryoutInvitationSchema } from "../../domain/models/invitation.js";
+import { scoutPrivateNoteSchema, tryoutInvitationSchema } from "../../domain/models/invitation.js";
 import { playerProfileSchema } from "../../domain/models/player-profile.js";
 import { scoutingRelationshipSchema } from "../../domain/models/relationship.js";
 import { storedScoutReportSchema } from "../../domain/models/scout-report.js";
@@ -20,6 +20,7 @@ export const localDataStateSchema = z
     relationships: z.record(z.string(), scoutingRelationshipSchema),
     receivedPackages: z.record(z.string(), sharedPlayerPackageSchema),
     invitations: z.record(z.string(), tryoutInvitationSchema),
+    scoutPrivateNotes: z.record(z.string(), scoutPrivateNoteSchema).default({}),
     wallets: z.record(z.string(), walletPublicMetadataSchema),
     payments: z.record(z.string(), paymentReferenceSchema),
     relationshipEvents: z.record(z.string(), z.array(scoutPassEventSchema)),
@@ -42,6 +43,7 @@ export const createEmptyLocalDataState = (now = new Date()): LocalDataState => (
   relationships: {},
   receivedPackages: {},
   invitations: {},
+  scoutPrivateNotes: {},
   wallets: {},
   payments: {},
   relationshipEvents: {},

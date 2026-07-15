@@ -101,6 +101,7 @@ export const createJsonRepositories = (store: JsonFileStore): ScoutPassRepositor
     (entity) => entity.packageId
   ),
   invitations: new JsonEntityRepository(store, "invitations", (entity) => entity.id),
+  scoutPrivateNotes: new JsonEntityRepository(store, "scoutPrivateNotes", (entity) => entity.id),
   wallets: new JsonEntityRepository(store, "wallets", (entity) => entity.id),
   payments: new JsonEntityRepository(store, "payments", (entity) => entity.id),
   relationshipEvents: new JsonRelationshipEventLogRepository(store)

@@ -28,13 +28,16 @@
     "build": "tsc -p tsconfig.build.json",
     "test": "vitest run",
     "test:p2p": "SCOUTPASS_P2P_SMOKE=1 vitest run tests/hyperswarm-peer-transport.integration.test.ts",
+    "test:wdk:network": "SCOUTPASS_WDK_NETWORK_SMOKE=1 vitest run tests/wdk-wallet.test.ts",
+    "test:keychain": "SCOUTPASS_KEYCHAIN_SMOKE=1 vitest run tests/wdk-wallet.test.ts",
     "test:watch": "vitest",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "wallet:show": "node dist/runtime/wallet-cli.js"
   },
   "dependencies": {
     "@qvac/sdk": "^0.15.0",
-    "@tetherto/wdk": "^1.0.0-beta.14",
-    "@tetherto/wdk-wallet-evm": "^1.0.0-beta.15",
+    "@tetherto/wdk": "1.0.0-beta.14",
+    "@tetherto/wdk-wallet-evm": "1.0.0-beta.15",
     "corestore": "^7.11.0",
     "hypercore": "^11.34.0",
     "hyperswarm": "^4.17.0",

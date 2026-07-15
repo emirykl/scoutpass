@@ -59,12 +59,14 @@ export function PlayerProfileForm({ value, onChange, onLoadDemo }: PlayerProfile
           <p className="eyebrow">Player workspace</p>
           <h2 id="profile-title">Profile editor</h2>
         </div>
-        <button type="button" className="secondary-button" onClick={onLoadDemo}>
-          Load demo
-        </button>
-        <button type="button" className="secondary-button" onClick={saveDraft}>
-          Save draft
-        </button>
+        <div className="section-actions">
+          <button type="button" className="secondary-button" onClick={onLoadDemo}>
+            Load demo
+          </button>
+          <button type="button" className="primary-button" onClick={saveDraft}>
+            Save draft
+          </button>
+        </div>
       </div>
 
       <div className="completion">

@@ -19,8 +19,12 @@
     "format:check": "prettier --check .",
     "lint": "eslint . --max-warnings=0",
     "test": "npm run test --workspace backend && npm run test --workspace frontend",
+    "test:keychain": "npm run test:keychain --workspace backend",
     "test:p2p": "npm run test:p2p --workspace backend",
-    "typecheck": "npm run typecheck --workspace backend && npm run typecheck --workspace frontend"
+    "test:wdk:network": "npm run test:wdk:network --workspace backend",
+    "typecheck": "npm run typecheck --workspace backend && npm run typecheck --workspace frontend",
+    "wallet:player": "npm run build --workspace backend && npm run wallet:show --workspace backend -- player",
+    "wallet:scout": "npm run build --workspace backend && npm run wallet:show --workspace backend -- scout"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -1,9 +1,14 @@
 import { z } from "zod";
 
 import { idSchema, isoDateTimeSchema, nonEmptyTextSchema } from "../domain/models/common.js";
-import { invitationStatusSchema } from "../domain/models/invitation.js";
+import {
+  invitationStatusSchema,
+  scoutPrivateNoteSchema,
+  tryoutInvitationSchema
+} from "../domain/models/invitation.js";
 import { playerProfileSchema } from "../domain/models/player-profile.js";
 import { sharedPlayerPackageSchema, shareSelectionSchema } from "../domain/models/sharing.js";
+import { walletPublicMetadataSchema } from "../domain/models/wallet.js";
 
 const requestFields = {
   requestId: idSchema,
@@ -79,12 +84,53 @@ export const runtimeCommandSchema = z.discriminatedUnion("type", [
   z
     .object({
       ...requestFields,
+      type: z.literal("invitation.send"),
+      payload: tryoutInvitationSchema
+    })
+    .strict(),
+  z
+    .object({
+      ...requestFields,
       type: z.literal("invitation.respond"),
       payload: z
         .object({
           invitationId: idSchema,
           response: z.enum(["accepted", "declined", "clarification_requested"]),
           message: nonEmptyTextSchema.optional()
+        })
+        .strict()
+    })
+    .strict(),
+  z
+    .object({
+      ...requestFields,
+      type: z.literal("scout.note.save"),
+      payload: scoutPrivateNoteSchema
+    })
+    .strict(),
+  z
+    .object({
+      ...requestFields,
+      type: z.literal("wallet.initialize"),
+      payload: z.object({ ownerRole: z.enum(["player", "scout"]) }).strict()
+    })
+    .strict(),
+  z
+    .object({
+      ...requestFields,
+      type: z.literal("wallet.balance.get"),
+      payload: z.object({ address: z.string().regex(/^0x[a-fA-F0-9]{40}$/) }).strict()
+    })
+    .strict(),
+  z
+    .object({
+      ...requestFields,
+      type: z.literal("wallet.address.share"),
+      payload: z
+        .object({
+          relationshipId: idSchema,
+          wallet: walletPublicMetadataSchema,
+          playerApproved: z.literal(true)
         })
         .strict()
     })
@@ -121,6 +167,46 @@ export const runtimeEventSchema = z.discriminatedUnion("type", [
       occurredAt: isoDateTimeSchema,
       type: z.literal("share.received"),
       payload: z.object({ package: sharedPlayerPackageSchema }).strict()
+    })
+    .strict(),
+  z
+    .object({
+      requestId: idSchema,
+      occurredAt: isoDateTimeSchema,
+      type: z.literal("invitation.updated"),
+      payload: z.object({ invitation: tryoutInvitationSchema }).strict()
+    })
+    .strict(),
+  z
+    .object({
+      requestId: idSchema,
+      occurredAt: isoDateTimeSchema,
+      type: z.literal("scout.note.saved"),
+      payload: z.object({ noteId: idSchema }).strict()
+    })
+    .strict(),
+  z
+    .object({
+      requestId: idSchema,
+      occurredAt: isoDateTimeSchema,
+      type: z.literal("wallet.updated"),
+      payload: z
+        .object({
+          wallet: walletPublicMetadataSchema,
+          balance: z
+            .string()
+            .regex(/^\d+(?:\.\d{1,6})?$/)
+            .optional()
+        })
+        .strict()
+    })
+    .strict(),
+  z
+    .object({
+      requestId: idSchema,
+      occurredAt: isoDateTimeSchema,
+      type: z.literal("wallet.address.received"),
+      payload: z.object({ wallet: walletPublicMetadataSchema }).strict()
     })
     .strict(),
   z
