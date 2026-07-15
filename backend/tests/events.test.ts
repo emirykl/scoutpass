@@ -34,7 +34,7 @@ describe("P2P event validation", () => {
       destinationAddress: `0x${"1".repeat(40)}`,
       network: TESTNET_CONFIG.network,
       tokenAddress: TESTNET_CONFIG.tokenAddress,
-      asset: "USD₮" as const,
+      asset: "spUSD" as const,
       amount: "25.50",
       feeBaseUnits: "21000000000000",
       status: "confirmed" as const,

@@ -14,7 +14,7 @@ flowchart LR
   Player --> WP[Player WDK wallet]
   WS --> RPC[Public Sepolia RPC]
   WP --> RPC
-  Organizer[Test token faucet] -. test assets .-> WS
+  Deployment[spUSD constructor mint] -. fixed test supply .-> WS
 ```
 
 ## Containers
@@ -106,7 +106,7 @@ sequenceDiagram
   S->>PP: travel_support.proposed
   S->>S: Display invitation, network, token, address, amount, fee
   S->>W: Confirm and sign
-  W->>R: Signed test USD₮ transaction
+  W->>R: Signed spUSD test-token transaction
   R-->>W: Real transaction hash
   W-->>S: pending PaymentReference
   S->>PP: travel_support.sent

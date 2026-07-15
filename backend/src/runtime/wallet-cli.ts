@@ -34,7 +34,7 @@ try {
         role,
         network: wallet.network,
         address: wallet.address,
-        testUsdtBalance: balance,
+        spUsdBalance: balance,
         testnetOnly: wallet.testnetOnly
       },
       null,

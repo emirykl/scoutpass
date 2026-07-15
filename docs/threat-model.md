@@ -40,7 +40,7 @@ Trust boundaries:
 
 ## Payment safety invariants
 
-- Network and token address are compile-time Sepolia/test USD₮ literals.
+- Network and project-owned spUSD token address are compile-time Sepolia literals.
 - Floating-point arithmetic is not used for token amounts.
 - Review quotes a fee but does not sign.
 - `userConfirmed: true` is required at the runtime contract and use-case boundary.

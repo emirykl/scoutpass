@@ -63,7 +63,7 @@ export const createInvitation = (overrides: Partial<TryoutInvitation> = {}): Try
   instructions: "Arrive 30 minutes early with standard training equipment.",
   contactDetails: "scout@example.test",
   travelSupportAmount: "25.50",
-  paymentAsset: "USD₮",
+  paymentAsset: "spUSD",
   expiresAt: "2026-07-19T07:00:00.000Z",
   status: "draft",
   createdAt: NOW.toISOString(),

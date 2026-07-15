@@ -2,7 +2,7 @@
 
 ScoutPass is a local-first football scouting and tryout MVP. An adult player creates a structured
 profile, generates a scouting report on-device, chooses exactly what to share with one scout,
-receives a P2P tryout invitation, and can receive optional testnet USD₮ travel support.
+receives a P2P tryout invitation, and can receive optional spUSD test-token travel support.
 
 The project was built for the Tether Developers Cup. It intentionally does not provide a public
 player marketplace, cloud AI, centralized messaging, identity verification, escrow, or mainnet
@@ -26,7 +26,7 @@ Player profile
   -> exact share preview and approval
   -> Pears P2P transfer
   -> tryout invitation and player response
-  -> reviewed WDK Sepolia USD₮ travel support
+  -> reviewed WDK Sepolia spUSD travel support
   -> local activity history on both instances
 ```
 
@@ -58,7 +58,7 @@ address shared through the same P2P relationship. Signing is not called until `C
 - npm `11.6.2`
 - At least 2 GB available RAM before loading the selected QVAC model
 - Pear CLI `3.0.0` and Bare `1.30.3` for Pear runtime work
-- Sepolia ETH and test USD₮ only for the payment demonstration
+- Sepolia ETH and ScoutPass Test USD (`spUSD`) only for the payment demonstration
 
 ## Install and verify
 
@@ -156,8 +156,8 @@ npm run wallet:scout
 ```
 
 These commands create or restore role-specific wallets in macOS Keychain and print only public
-metadata and test USD₮ balance. Fund the Scout address with Sepolia ETH for gas and organizer-issued
-test USD₮. Never send real ETH, mainnet USD₮, or other funds to demo wallets.
+metadata and spUSD balance. The Scout address holds the fixed-supply spUSD deployment and uses
+Sepolia ETH for gas. Never send real ETH, mainnet USD₮, or other funds to demo wallets.
 
 The repository does not hard-code an unverified faucet. See [wallet-testnet.md](docs/wallet-testnet.md)
 for the fixed network and token configuration.
@@ -209,13 +209,13 @@ Read [threat-model.md](docs/threat-model.md), [privacy.md](docs/privacy.md), and
 - Scout and club identities are not verified.
 - Statistics and coach notes are player-provided.
 - There is no mainnet support, escrow, gas sponsorship, or automatic payment retry.
-- A real funded test USD₮ transaction still requires explicit Scout approval and manual evidence.
+- A real funded spUSD transaction still requires explicit Scout approval and manual evidence.
 - DoraHacks and YouTube submission URLs are not present in the repository.
 
 ## Roadmap
 
 1. Record the complete two-window Player/Scout acceptance flow and offline QVAC run.
-2. Complete one funded Sepolia USD₮ acceptance transaction and receipt check.
+2. Complete one funded Sepolia spUSD acceptance transaction and receipt check.
 3. Add optional club identity attestations without centralizing player data.
 4. Evaluate Autobase only if a real multi-writer requirement appears.
 

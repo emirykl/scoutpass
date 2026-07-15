@@ -87,7 +87,7 @@ export function WalletPanel({
         payload: { address: wallet.address }
       });
       if (event.type === "operation.failed") {
-        throw runtimeFailureError(event.payload, "The test USD₮ balance could not be refreshed.");
+        throw runtimeFailureError(event.payload, "The spUSD balance could not be refreshed.");
       }
       if (event.type !== "wallet.updated") {
         throw new Error("Desktop runtime did not return the test balance.");

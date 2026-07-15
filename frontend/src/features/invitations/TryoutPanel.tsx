@@ -19,6 +19,7 @@ interface TryoutPanelProps {
   readonly role: "player" | "scout";
   readonly relationshipId: string;
   readonly receivedPackage?: SharedPlayerPackage | undefined;
+  readonly storedInvitation?: TryoutInvitation | undefined;
   readonly onInvitationChange?: ((invitation: TryoutInvitation) => void) | undefined;
 }
 
@@ -41,9 +42,11 @@ export function TryoutPanel({
   role,
   relationshipId,
   receivedPackage,
+  storedInvitation,
   onInvitationChange
 }: TryoutPanelProps) {
-  const [invitation, setInvitation] = useState<TryoutInvitation>();
+  const [runtimeInvitation, setRuntimeInvitation] = useState<TryoutInvitation>();
+  const invitation = runtimeInvitation ?? storedInvitation;
 
   useEffect(
     () =>
@@ -52,7 +55,7 @@ export function TryoutPanel({
           event.type === "invitation.updated" &&
           event.payload.invitation.relationshipId === relationshipId
         ) {
-          setInvitation(event.payload.invitation);
+          setRuntimeInvitation(event.payload.invitation);
           onInvitationChange?.(event.payload.invitation);
         }
       }),
@@ -65,7 +68,7 @@ export function TryoutPanel({
       receivedPackage={receivedPackage}
       invitation={invitation}
       onInvitationChange={(next) => {
-        setInvitation(next);
+        setRuntimeInvitation(next);
         onInvitationChange?.(next);
       }}
     />
@@ -74,7 +77,7 @@ export function TryoutPanel({
       relationshipId={relationshipId}
       invitation={invitation}
       onInvitationChange={(next) => {
-        setInvitation(next);
+        setRuntimeInvitation(next);
         onInvitationChange?.(next);
       }}
     />
@@ -125,7 +128,7 @@ function ScoutTryoutComposer({
         contactDetails: form.contactDetails,
         ...(form.travelSupportAmount.trim() === ""
           ? {}
-          : { travelSupportAmount: form.travelSupportAmount, paymentAsset: "USD₮" as const }),
+          : { travelSupportAmount: form.travelSupportAmount, paymentAsset: "spUSD" as const }),
         expiresAt: new Date(form.expiresAt).toISOString(),
         status: "draft",
         createdAt: now.toISOString(),
@@ -370,7 +373,7 @@ const FIELD_LABELS = {
   instructions: "Instructions",
   contactDetails: "Contact details",
   expiresAt: "Response deadline",
-  travelSupportAmount: "Travel support (USD₮, optional)"
+  travelSupportAmount: "Travel support (spUSD, optional)"
 } as const;
 const DATE_FIELDS = new Set(["startsAt", "endsAt", "expiresAt"]);
 const WIDE_FIELDS = new Set(["instructions", "contactDetails"]);

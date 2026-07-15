@@ -228,7 +228,7 @@ export class TravelSupportPaymentService {
     ) {
       throw new TravelSupportPaymentError(
         "invitation_not_accepted",
-        "Travel support requires an accepted invitation with a USD₮ amount."
+        "Travel support requires an accepted invitation with an spUSD amount."
       );
     }
     return invitation;
@@ -314,7 +314,7 @@ export class TravelSupportPaymentService {
 const mapWalletFailure = (error: unknown): string => {
   const message = error instanceof Error ? error.message.toLowerCase() : "";
   if (message.includes("insufficient") || message.includes("balance")) {
-    return "Insufficient test USD₮ or Sepolia ETH balance for this transaction.";
+    return "Insufficient spUSD or Sepolia ETH balance for this transaction.";
   }
   if (message.includes("timeout") || message.includes("timed out") || message.includes("abort")) {
     return "The Sepolia transaction request timed out. Its status was not assumed successful.";

@@ -33,6 +33,7 @@
     "test:pear-worker": "npm run build --workspace backend && npm run test:pear-worker --workspace backend",
     "test:p2p": "npm run test:p2p --workspace backend",
     "test:wdk:network": "npm run test:wdk:network --workspace backend",
+    "token:deploy:sepolia": "npm run build --workspace backend && npm run token:deploy --workspace backend --",
     "typecheck": "npm run typecheck --workspace backend && npm run typecheck --workspace frontend",
     "qvac:report": "npm run build --workspace backend && npm run qvac:report --workspace backend",
     "wallet:player": "npm run build --workspace backend && npm run wallet:show --workspace backend -- player",
@@ -60,6 +61,7 @@
     "hyperdht": "6.33.0",
     "pear": "^3.0.0",
     "prettier": "^3.9.5",
+    "solc": "^0.8.36",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.64.0",
     "vitest": "^4.1.10"

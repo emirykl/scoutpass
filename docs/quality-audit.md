@@ -18,7 +18,7 @@ applicable.
 | `npm run test:p2p`         | Pass                 | Two local DHT nodes, connect/reconnect, selected profile, acknowledgement, invitation, acceptance, public wallet metadata |
 | `npm run test:pear-worker` | Pass                 | Bare IPC validation and persisted/reopened Corestore Hypercore audit records                                              |
 | `npm run test:keychain`    | Pass                 | Temporary Keychain set/get/delete and stable WDK wallet restoration                                                       |
-| `npm run test:wdk:network` | Pass                 | Real Sepolia RPC test USD₮ balance query through WDK                                                                      |
+| `npm run test:wdk:network` | Pass                 | Real Sepolia RPC spUSD balance query through WDK                                                                          |
 | `npx qvac doctor --json`   | Required checks pass | SDK resolution, macOS arm64, Metal, 16 GB total RAM, disk                                                                 |
 | `npm run qvac:report`      | Pass                 | Cached Qwen3 0.6B Q4 generated a Zod-valid local report                                                                   |
 | Packaged role smoke        | Pass                 | Player/Scout preload injection and worker-routed runtime status                                                           |
@@ -113,7 +113,7 @@ were present. DoraHacks and YouTube URLs were not found and remain user submissi
 
 1. Disable networking and preserve a second successful QVAC report as offline evidence.
 2. Run the packaged desktop host through the complete two-window product workflow.
-3. Fund the Scout demo wallet with Sepolia ETH and test USD₮.
+3. Confirm the Scout demo wallet has Sepolia ETH and the deployed spUSD supply.
 4. Complete one explicitly approved transaction and confirm the hash from both roles.
 5. Capture screenshots and a maximum three-minute unlisted demo.
 6. Add and verify DoraHacks and YouTube URLs.

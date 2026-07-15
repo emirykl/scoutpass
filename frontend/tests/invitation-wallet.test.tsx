@@ -29,8 +29,42 @@ describe("tryout and wallet UI", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Preview invitation" }));
     expect(screen.getByText("First Team Winger Trial")).toBeInTheDocument();
-    expect(screen.getByText(/25.50 USD₮/)).toBeInTheDocument();
+    expect(screen.getByText(/25.50 spUSD/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Send invitation" })).toBeDisabled();
+  });
+
+  it("shows a previously received invitation when the player opens the tryout step", () => {
+    const invitation: TryoutInvitation = {
+      id: "invitation_restored_001",
+      relationshipId: "relationship_demo_001",
+      clubName: "Izmir Football Club",
+      scoutName: "Demo Scout",
+      trialTitle: "First Team Winger Trial",
+      startsAt: "2026-07-20T10:00:00.000Z",
+      endsAt: "2026-07-20T12:00:00.000Z",
+      city: "Izmir",
+      venue: "Training Ground",
+      positionEvaluated: "Right Winger",
+      instructions: "Arrive early.",
+      contactDetails: "scout@example.test",
+      travelSupportAmount: "1.00",
+      paymentAsset: "spUSD",
+      expiresAt: "2026-07-19T10:00:00.000Z",
+      status: "received",
+      createdAt: "2026-07-14T10:00:00.000Z",
+      updatedAt: "2026-07-14T10:00:00.000Z"
+    };
+
+    render(
+      <TryoutPanel
+        role="player"
+        relationshipId="relationship_demo_001"
+        storedInvitation={invitation}
+      />
+    );
+
+    expect(screen.getByText("First Team Winger Trial")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Accept" })).toBeDisabled();
   });
 
   it("shows a testnet-only WDK wallet without exposing recovery material", () => {
@@ -83,7 +117,7 @@ describe("tryout and wallet UI", () => {
       instructions: "Arrive early.",
       contactDetails: "scout@example.test",
       travelSupportAmount: "25.50",
-      paymentAsset: "USD₮",
+      paymentAsset: "spUSD",
       expiresAt: "2026-07-19T10:00:00.000Z",
       status: "accepted",
       createdAt: "2026-07-14T10:00:00.000Z",
@@ -95,8 +129,8 @@ describe("tryout and wallet UI", () => {
       relationshipId: invitation.relationshipId,
       destinationAddress: `0x${"1".repeat(40)}`,
       network: "Ethereum Sepolia",
-      tokenAddress: "0xd077a400968890eacc75cdc901f0356c943e4fdb",
-      asset: "USD₮",
+      tokenAddress: "0x0E746Cf3DFb656dF11AeBa7775Df3C7b74425b18",
+      asset: "spUSD",
       amount: "25.50",
       feeBaseUnits: "21000000000000",
       status: "proposed",
@@ -135,7 +169,7 @@ describe("tryout and wallet UI", () => {
     };
     render(<PaymentHarness />);
     fireEvent.click(screen.getByRole("button", { name: "Prepare payment summary" }));
-    expect(await screen.findByText("25.50 USD₮")).toBeInTheDocument();
+    expect(await screen.findByText("25.50 spUSD")).toBeInTheDocument();
     expect(request).toHaveBeenCalledTimes(1);
     expect(screen.getByRole("button", { name: "Send test payment" })).toBeDisabled();
 

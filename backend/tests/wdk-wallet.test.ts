@@ -131,14 +131,14 @@ describe("WDK self-custodial wallet", () => {
     await expect(store.get("ethereum-sepolia:player")).resolves.toBe(PLAYER_SEED);
   });
 
-  it("formats six-decimal USD₮ balances without floating point arithmetic", () => {
+  it("formats six-decimal spUSD balances without floating point arithmetic", () => {
     expect(formatBaseUnits(25_500_000n, 6)).toBe("25.5");
     expect(formatBaseUnits(1n, 6)).toBe("0.000001");
     expect(formatBaseUnits(0n, 6)).toBe("0");
   });
 
   it.runIf(process.env.SCOUTPASS_WDK_NETWORK_SMOKE === "1")(
-    "reads a real test USD₮ balance from Ethereum Sepolia",
+    "reads a real spUSD balance from Ethereum Sepolia",
     async () => {
       const secrets = new InMemorySecretStore();
       const gateway = new WdkEvmWalletGateway({

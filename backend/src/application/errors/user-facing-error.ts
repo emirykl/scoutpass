@@ -7,7 +7,7 @@ export interface UserFacingFailure {
 }
 
 const PAYMENT_MESSAGES: Readonly<Record<TravelSupportPaymentError["code"], string>> = {
-  invitation_not_accepted: "Travel support requires an accepted invitation with a USD₮ amount.",
+  invitation_not_accepted: "Travel support requires an accepted invitation with an spUSD amount.",
   address_not_verified: "The player receive address could not be verified for this connection.",
   duplicate_payment: "A travel support payment already exists for this invitation.",
   payment_not_found: "The travel support payment was not found on this device.",
@@ -62,7 +62,7 @@ export const mapErrorToUserFacingFailure = (error: unknown): UserFacingFailure =
     case "WalletBalanceQueryError":
       return {
         code: "wallet_balance_unavailable",
-        message: "The test USD₮ balance could not be read from Sepolia.",
+        message: "The spUSD balance could not be read from Sepolia.",
         retryable: true
       };
     default:

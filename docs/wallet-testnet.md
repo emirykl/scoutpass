@@ -6,7 +6,8 @@ ScoutPass uses the official WDK EVM module on Ethereum Sepolia only.
 
 - Network: Ethereum Sepolia
 - Chain ID: `11155111`
-- Test USD₮ contract: `0xd077a400968890eacc75cdc901f0356c943e4fdb`
+- Test asset: ScoutPass Test USD (`spUSD`), a project-owned mock ERC-20 with no monetary value
+- spUSD contract: `0x0E746Cf3DFb656dF11AeBa7775Df3C7b74425b18`
 - Token decimals: `6`
 - Default public RPC: `https://sepolia.drpc.org`
 
@@ -28,7 +29,7 @@ npm run test:keychain
 npm run test:wdk:network
 ```
 
-The first command creates a temporary Keychain item, reads it back, deletes it, and confirms deletion. The second derives a real WDK EVM account and reads its test USD₮ balance from Sepolia.
+The first command creates a temporary Keychain item, reads it back, deletes it, and confirms deletion. The second derives a real WDK EVM account and reads its spUSD balance from Sepolia.
 
 ## Funding the demo wallets
 
@@ -40,11 +41,12 @@ The first command creates a temporary Keychain item, reads it back, deletes it, 
    ```
 
 2. Obtain Sepolia ETH for gas from a reputable Sepolia faucet listed by the Ethereum ecosystem or the hackathon organizer.
-3. Obtain test USD₮ only from the Tether Developers Cup organizer's confirmed dispenser/faucet.
+3. The fixed supply of 1,000 spUSD was minted to the Scout WDK address by the constructor.
 4. Never send mainnet ETH or real USD₮ to these addresses for the demo.
 5. Run `npm run test:wdk:network` again and confirm balance reads remain healthy.
 
-The WDK documentation confirms Sepolia support and public RPC usage but does not publish a test USD₮ faucet. ScoutPass therefore does not hard-code or recommend an unverified token dispenser.
+The spUSD deployment transaction is `0x6009f180bfb29dc9551fd27f5b76d196ba04fa04d30b92614c10edd0069b746d`.
+The token is not issued by Tether and must never be represented as real or redeemable USD₮.
 
 Official references:
 

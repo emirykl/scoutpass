@@ -30,7 +30,7 @@ export class WalletInitializationError extends Error {
 
 export class WalletBalanceQueryError extends Error {
   public constructor(options?: ErrorOptions) {
-    super("Test USD₮ balance could not be read from Ethereum Sepolia.", options);
+    super("spUSD balance could not be read from Ethereum Sepolia.", options);
     this.name = "WalletBalanceQueryError";
   }
 }

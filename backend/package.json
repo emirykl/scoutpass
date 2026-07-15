@@ -35,6 +35,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "qvac:report": "node dist/runtime/qvac-report-cli.js",
+    "token:deploy": "node dist/runtime/deploy-test-token-cli.js",
     "wallet:show": "node dist/runtime/wallet-cli.js"
   },
   "dependencies": {

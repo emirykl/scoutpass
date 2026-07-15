@@ -200,7 +200,7 @@ describe("travel support payment", () => {
     });
     expect(await payments.get(proposal.id)).toMatchObject({
       status: "failed",
-      failureReason: "Insufficient test USD₮ or Sepolia ETH balance for this transaction."
+      failureReason: "Insufficient spUSD or Sepolia ETH balance for this transaction."
     });
     expect((await payments.get(proposal.id))?.transactionId).toBeUndefined();
   });

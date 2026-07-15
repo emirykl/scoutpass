@@ -296,6 +296,7 @@ export function App() {
               role={role}
               relationshipId={RELATIONSHIP_ID}
               receivedPackage={role === "scout" ? receivedPackage : undefined}
+              storedInvitation={invitation}
               onInvitationChange={setInvitation}
             />
           ) : null}

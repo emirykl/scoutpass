@@ -61,9 +61,9 @@ These checks validate package shape only. Model inference, P2P transfer, and tes
 
 ## Testnet decision
 
-The MVP wallet target is Ethereum Sepolia (`chainId` 11155111) with the test USD₮ address published in WDK documentation:
+The MVP wallet target is Ethereum Sepolia (`chainId` 11155111) with a project-owned mock ERC-20 used only for the demo:
 
-`0xd077a400968890eacc75cdc901f0356c943e4fdb`
+`0x0E746Cf3DFb656dF11AeBa7775Df3C7b74425b18` (`spUSD`, 6 decimals)
 
 This is a test-only asset with six decimals and no redeemable value. The initial MVP uses the standard WDK EVM wallet module. ERC-4337 or EIP-7702 gasless modules are intentionally deferred because they add bundler/paymaster dependencies to the critical demo path.
 

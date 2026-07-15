@@ -3,7 +3,7 @@ import type { RuntimeEvent } from "@scoutpass/backend/contracts";
 type OperationFailure = Extract<RuntimeEvent, { readonly type: "operation.failed" }>["payload"];
 
 const FAILURE_MESSAGES: Readonly<Record<string, string>> = {
-  invitation_not_accepted: "Travel support requires an accepted invitation with a USD₮ amount.",
+  invitation_not_accepted: "Travel support requires an accepted invitation with an spUSD amount.",
   address_not_verified: "The player receive address could not be verified for this connection.",
   duplicate_payment: "A travel support payment already exists for this invitation.",
   payment_not_found: "The travel support payment was not found on this device.",
@@ -11,7 +11,7 @@ const FAILURE_MESSAGES: Readonly<Record<string, string>> = {
   invalid_payment_state: "This payment cannot continue from its current status.",
   wallet_operation_failed: "The testnet wallet operation failed. Check balances and try again.",
   wallet_initialization_failed: "The self-custodial testnet wallet could not be initialized.",
-  wallet_balance_unavailable: "The test USD₮ balance could not be read from Sepolia.",
+  wallet_balance_unavailable: "The spUSD balance could not be read from Sepolia.",
   qvac_model_unavailable: "The local QVAC model could not be loaded.",
   qvac_invalid_output: "QVAC did not return a valid scouting report after one retry.",
   peer_payload_rejected: "A peer message was rejected because it failed validation.",

@@ -7,7 +7,7 @@ integration evidence.
 
 - Cache the QVAC model and complete one offline rehearsal.
 - Open clean Player and Scout instances side by side.
-- Fund the Scout wallet with Sepolia ETH and test USD₮.
+- Confirm the Scout wallet has Sepolia ETH and the deployed spUSD test-token supply.
 - Keep a second funded Scout wallet available.
 - Prepare an invitation with a future date and a small test travel-support amount.
 - Verify screen recording does not expose notifications, Keychain dialogs, personal email, or an
@@ -67,7 +67,7 @@ Narration:
 ## 1:55-2:40 — Reviewed WDK payment
 
 On Player, show the WDK public receive address and approve sharing. On Scout, open travel support and
-show invitation, Sepolia network, test USD₮ token, destination, amount, and fee.
+show invitation, Sepolia network, spUSD test token, destination, amount, and fee.
 
 Pause on the unchecked approval box.
 

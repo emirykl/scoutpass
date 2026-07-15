@@ -24,7 +24,7 @@ mock data, a fake transaction, or a cloud AI substitute.
 - [x] Selected QVAC model is downloaded and cached before the demo.
 - [ ] Player and Scout use clean, isolated data directories.
 - [ ] Scout wallet has enough Sepolia ETH for gas.
-- [ ] Scout wallet has enough organizer-issued test USD₮.
+- [x] Scout wallet has 1,000 spUSD from the confirmed project-owned deployment.
 - [ ] Backup demo wallet has testnet funds.
 - [ ] Wi-Fi/network can be toggled without interrupting screen recording.
 - [ ] No real/mainnet funds are present or used.
@@ -92,7 +92,7 @@ Scout instance start command:
 - [ ] Player initializes/restores the Player wallet and explicitly shares its public address.
 - [ ] Scout initializes/restores the separate Scout wallet.
 - [ ] Payment review is unavailable before invitation acceptance.
-- [ ] Review shows invitation, Sepolia, test USD₮, Player address, amount, and fee.
+- [ ] Review shows invitation, Sepolia, spUSD, Player address, amount, and fee.
 - [ ] Reject path creates no transaction.
 - [ ] Insufficient gas/token path shows a safe error and no fake success.
 - [ ] Scout checks the confirmation box and clicks `Confirm and sign`.
@@ -108,7 +108,7 @@ Record:
 Transaction hash:
 Sepolia explorer URL:
 Final status:
-Test USD₮ amount:
+spUSD amount:
 ```
 
 ## Persistence and privacy

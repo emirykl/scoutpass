@@ -13,7 +13,7 @@ export const invitationStatusSchema = z.enum([
   "travel_support_sent"
 ]);
 
-export const paymentAssetSchema = z.literal("USD₮");
+export const paymentAssetSchema = z.literal("spUSD");
 export const moneyAmountSchema = z.string().regex(/^(?:0|[1-9]\d*)(?:\.\d{1,6})?$/, {
   message: "Amount must be a non-negative decimal with at most 6 fractional digits."
 });

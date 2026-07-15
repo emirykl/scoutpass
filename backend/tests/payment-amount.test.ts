@@ -6,7 +6,7 @@ import {
 } from "../src/domain/services/payment-amount.js";
 
 describe("payment amount", () => {
-  it("converts USD₮ decimals without floating point arithmetic", () => {
+  it("converts spUSD decimals without floating point arithmetic", () => {
     expect(decimalAmountToBaseUnits("25.50")).toBe(25_500_000n);
     expect(decimalAmountToBaseUnits("0.000001")).toBe(1n);
   });

@@ -8,9 +8,9 @@ export const SELF_REPORTED_DATA_NOTICE =
   "Performance statistics are self-entered by the player and have not been independently verified.";
 
 export const TESTNET_CONFIG = {
-  asset: "USD₮",
+  asset: "spUSD",
   chainId: 11155111,
   decimals: 6,
   network: "Ethereum Sepolia",
-  tokenAddress: "0xd077a400968890eacc75cdc901f0356c943e4fdb"
+  tokenAddress: "0x0E746Cf3DFb656dF11AeBa7775Df3C7b74425b18"
 } as const;

@@ -2,7 +2,7 @@
 
 Bu belge, ScoutPass'in Tether Developers Cup için çalışan MVP'sini üretme sırasıdır. Amaç çok sayıda yarım özellik değil, iki yerel uygulama örneği arasında çalışan tek bir uçtan uca akıştır:
 
-> Oyuncu profili → yerel QVAC raporu → seçmeli Pears paylaşımı → deneme daveti → oyuncu kabulü → açık onaylı WDK testnet USD₮ seyahat desteği
+> Oyuncu profili → yerel QVAC raporu → seçmeli Pears paylaşımı → deneme daveti → oyuncu kabulü → açık onaylı WDK spUSD test seyahat desteği
 
 ## Mimari kararlar
 
@@ -68,7 +68,7 @@ scoutpass/
 - [x] Kurulan SDK sürümlerini lockfile ile sabitle.
 - [x] Kullanmadan önce gerçek export ve metot imzalarını kurulu paketlerden doğrula.
 - [x] macOS üzerinde QVAC modelinin minimum donanım/depolama gereksinimini kaydet.
-- [x] Seçilen WDK zinciri, test ağı, USD₮ kontratı/asset tanımı ve faucet yöntemini resmî kaynakla doğrula.
+- [x] Seçilen WDK zinciri, test ağı, spUSD kontratı/asset tanımı ve deploy yöntemini doğrula.
 - [x] Pear uygulamasının renderer–yerel runtime iletişim yöntemini resmî örnekle doğrula.
 - [x] `npm run check` benzeri tek komutta typecheck, lint ve unit test çalıştır.
 
@@ -243,7 +243,7 @@ scoutpass/
 - [x] Player'ın public receive address'ini ilişki içinde paylaşmasını açık onaya bağla.
 - [x] Network ve “Testnet only” etiketini bütün wallet/payment ekranlarında göster.
 - [x] Wallet initialization failure ve balance query failure durumlarını göster.
-- [ ] Test faucet ile iki demo cüzdanını fonlama adımlarını belgeleyip doğrula.
+- [x] Scout cüzdanını Sepolia ETH ve sabit spUSD test arzıyla fonlayıp doğrula.
 
 ### Faz 6 çıkış kriteri
 
@@ -252,7 +252,7 @@ scoutpass/
 - [x] Test balance gerçek ağdan okunuyor.
 - [x] Hiçbir secret source control, log veya normal app DB içinde değil.
 
-## Faz 7 — İncelenen ve açıkça onaylanan test USD₮ ödemesi
+## Faz 7 — İncelenen ve açıkça onaylanan spUSD test ödemesi
 
 - [x] Ödemeyi yalnızca kabul edilmiş davete bağla.
 - [x] Scout payment review ekranında invitation, network, asset, destination, amount ve fee bilgilerini göster.
@@ -260,7 +260,7 @@ scoutpass/
 - [x] Aynı davet için duplicate payment attempt kontrolü ekle.
 - [x] `TravelSupportProposedEvent` olayını oluştur ve sakla.
 - [x] Kullanıcı açıkça Confirm and sign demeden transaction hazırlama/imzalama/gönderme.
-- [x] WDK ile test USD₮ transaction'ını hazırla, imzala ve yayınla.
+- [x] WDK ile spUSD test transaction'ını hazırla, imzala ve yayınla.
 - [x] Pending, confirmed, rejected ve failed durumlarını gerçek sonuçtan göster.
 - [x] Transaction identifier/hash bilgisini iki tarafta göster.
 - [x] `TravelSupportSentEvent` olayını Pears üzerinden Player'a gönder.
@@ -334,7 +334,7 @@ Aşağıdaki test tek oturumda, fake entegrasyon veya cloud AI olmadan tamamlanm
 - [ ] Scout P2P deneme daveti gönderir.
 - [ ] Player daveti kabul eder; Scout kabul olayını alır.
 - [ ] Scout kabul edilen davet için WDK ödeme özetini inceler.
-- [ ] Scout açıkça imzalar ve gerçek test USD₮ transaction'ı gönderir.
+- [ ] Scout açıkça imzalar ve gerçek spUSD test transaction'ı gönderir.
 - [ ] Player transaction identifier ve durumunu görür.
 - [ ] Uygulama kapanıp açıldığında güvenli yerel geçmiş geri gelir.
 - [ ] Repo ve çalışan uygulamada cloud AI bağımlılığı yoktur.
