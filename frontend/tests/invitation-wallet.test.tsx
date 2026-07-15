@@ -44,6 +44,30 @@ describe("tryout and wallet UI", () => {
     expect(document.body.textContent?.toLowerCase()).not.toContain("seed phrase");
   });
 
+  it("shows a previously received player address when the scout opens the wallet step", () => {
+    const playerWallet = {
+      id: "wallet_player_ethereum_sepolia",
+      ownerRole: "player" as const,
+      network: "Ethereum Sepolia" as const,
+      chainId: 11_155_111 as const,
+      address: `0x${"1".repeat(40)}`,
+      testnetOnly: true as const,
+      createdAt: "2026-07-14T10:00:00.000Z",
+      updatedAt: "2026-07-14T10:00:00.000Z"
+    };
+
+    render(
+      <WalletPanel
+        role="scout"
+        relationshipId="relationship_demo_001"
+        sharedPlayerWallet={playerWallet}
+      />
+    );
+
+    expect(screen.getByText(/Player address received/)).toHaveTextContent(playerWallet.address);
+    expect(screen.queryByText(/Waiting for the player/)).not.toBeInTheDocument();
+  });
+
   it("does not request signing until the scout explicitly confirms the reviewed payment", async () => {
     const invitation: TryoutInvitation = {
       id: "invitation_demo_001",

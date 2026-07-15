@@ -82,7 +82,7 @@ export function App() {
   const [receivedPackage, setReceivedPackage] = useState<SharedPlayerPackage>();
   const [invitation, setInvitation] = useState<TryoutInvitation>();
   const [payment, setPayment] = useState<PaymentReference>();
-  const [, setWallet] = useState<WalletPublicMetadata>();
+  const [wallets, setWallets] = useState<readonly WalletPublicMetadata[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<PeerConnectionStatus>("idle");
   const [privacyOpen, setPrivacyOpen] = useState(false);
 
@@ -90,7 +90,12 @@ export function App() {
     if (event.type === "share.received") setReceivedPackage(event.payload.package);
     if (event.type === "invitation.updated") setInvitation(event.payload.invitation);
     if (event.type === "payment.updated") setPayment(event.payload.payment);
-    if (event.type === "wallet.updated") setWallet(event.payload.wallet);
+    if (event.type === "wallet.updated") {
+      setWallets((current) => upsertWallet(current, event.payload.wallet));
+    }
+    if (event.type === "wallet.address.received") {
+      setWallets((current) => upsertWallet(current, event.payload.wallet));
+    }
     if (event.type === "report.updated") setReport(event.payload.report.content);
     if (event.type === "connection.status") setConnectionStatus(event.payload.status);
     if (event.type === "workspace.snapshot") {
@@ -99,6 +104,7 @@ export function App() {
       setReceivedPackage(event.payload.receivedPackages.at(-1));
       setInvitation(event.payload.invitations.at(-1));
       setPayment(event.payload.payments.at(-1));
+      setWallets(event.payload.wallets);
     }
   }, []);
 
@@ -298,7 +304,13 @@ export function App() {
               <WalletPanel
                 role={role}
                 relationshipId={RELATIONSHIP_ID}
-                onWalletChange={setWallet}
+                storedWallet={wallets.find((wallet) => wallet.ownerRole === role)}
+                sharedPlayerWallet={
+                  role === "scout"
+                    ? wallets.find((wallet) => wallet.ownerRole === "player")
+                    : undefined
+                }
+                onWalletChange={(wallet) => setWallets((current) => upsertWallet(current, wallet))}
               />
               <PaymentPanel
                 role={role}
@@ -354,3 +366,11 @@ export function App() {
     </main>
   );
 }
+
+const upsertWallet = (
+  wallets: readonly WalletPublicMetadata[],
+  wallet: WalletPublicMetadata
+): readonly WalletPublicMetadata[] => [
+  ...wallets.filter((candidate) => candidate.id !== wallet.id),
+  wallet
+];

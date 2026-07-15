@@ -13,30 +13,40 @@ import { runtimeFailureError, toUserFacingMessage } from "../../runtime/user-fac
 interface WalletPanelProps {
   readonly role: "player" | "scout";
   readonly relationshipId: string;
+  readonly storedWallet?: WalletPublicMetadata | undefined;
+  readonly sharedPlayerWallet?: WalletPublicMetadata | undefined;
   readonly onWalletChange?: ((wallet: WalletPublicMetadata) => void) | undefined;
 }
 
-export function WalletPanel({ role, relationshipId, onWalletChange }: WalletPanelProps) {
-  const [wallet, setWallet] = useState<WalletPublicMetadata>();
-  const [remotePlayerWallet, setRemotePlayerWallet] = useState<WalletPublicMetadata>();
+export function WalletPanel({
+  role,
+  relationshipId,
+  storedWallet,
+  sharedPlayerWallet,
+  onWalletChange
+}: WalletPanelProps) {
+  const [runtimeWallet, setRuntimeWallet] = useState<WalletPublicMetadata>();
+  const [runtimePlayerWallet, setRuntimePlayerWallet] = useState<WalletPublicMetadata>();
   const [balance, setBalance] = useState<string>();
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [shareApproved, setShareApproved] = useState(false);
   const [addressShared, setAddressShared] = useState(false);
   const [error, setError] = useState<string>();
   const runtimeAvailable = isDesktopRuntimeAvailable();
+  const wallet = runtimeWallet ?? storedWallet;
+  const remotePlayerWallet = runtimePlayerWallet ?? sharedPlayerWallet;
 
   useEffect(
     () =>
       subscribeRuntimeEvents((event) => {
         if (event.type === "wallet.updated" && event.payload.wallet.ownerRole === role) {
-          setWallet(event.payload.wallet);
+          setRuntimeWallet(event.payload.wallet);
           onWalletChange?.(event.payload.wallet);
           setBalance(event.payload.balance);
           setStatus("ready");
         }
         if (event.type === "wallet.address.received") {
-          setRemotePlayerWallet(event.payload.wallet);
+          setRuntimePlayerWallet(event.payload.wallet);
         }
       }),
     [onWalletChange, role]
@@ -57,7 +67,7 @@ export function WalletPanel({ role, relationshipId, onWalletChange }: WalletPane
       if (event.type !== "wallet.updated") {
         throw new Error("Desktop runtime did not return wallet metadata.");
       }
-      setWallet(event.payload.wallet);
+      setRuntimeWallet(event.payload.wallet);
       onWalletChange?.(event.payload.wallet);
       setBalance(event.payload.balance);
       setStatus("ready");
