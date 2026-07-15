@@ -19,6 +19,8 @@ Validated on 14 July 2026 in `/Users/emir/Desktop/scoutpass`.
 | Hyperswarm     | 4.17.0            |
 | Hypercore      | 11.34.0           |
 | Corestore      | 7.11.0            |
+| Electron       | 40.10.6           |
+| Electron Forge | 7.11.2            |
 
 Exact dependency versions are recorded in `package-lock.json`. Integration code must be checked against the installed TypeScript declarations again before each adapter is implemented.
 
@@ -33,7 +35,10 @@ Exact dependency versions are recorded in `package-lock.json`. Integration code 
 - Desktop target: supported
 - `@qvac/sdk`: resolvable from the workspace
 
-The doctor reported less than 2 GB available memory during the check. Close memory-heavy applications before loading a local model. QVAC model files are multi-gigabyte artifacts and remain excluded from Git.
+The doctor reported less than 2 GB immediately free memory during the check. Close memory-heavy applications before loading a local model. The selected Qwen3 0.6B Q4 artifact is 382,156,480 bytes and remains excluded from Git.
+
+The model was cached under `~/.qvac/models/` and generated a Zod-valid report after the adapter set an
+8,192-token context and replaced model-supplied timestamp/model metadata at the trusted host boundary.
 
 FFmpeg and Bun are not installed. They are not required by the ScoutPass text-report MVP: FFmpeg is relevant to audio workflows, and Bun is only required when building QVAC from source.
 

@@ -48,10 +48,11 @@ flowchart TB
   WDK <-->|balance / fee / raw tx / receipt| Sepolia[Sepolia RPC]
 ```
 
-The repository contains the renderer, typed contracts, domain/use cases, adapters, repositories,
-Pears worker host primitives, and runtime command handlers. The final Electron/preload packaging that
-installs `window.scoutpassRuntime` is not yet present; the Vite browser shell therefore remains a UI
-development surface.
+The packaged Electron app installs `window.scoutpassRuntime` from a sandboxed preload. Every command
+is validated in the renderer bridge and Electron main, accepted by the Bare worker, recorded as
+sanitized metadata in Corestore/Hypercore, and then dispatched to the local command handler. The
+returned event is validated, recorded by the worker, and returned to the renderer. The Vite browser
+shell remains a UI-only development surface.
 
 ## Component ownership
 
@@ -119,6 +120,10 @@ sequenceDiagram
 Each role resolves to a separate data file under `SCOUTPASS_DATA_DIR/<role>/`. Writes validate the
 complete state, write an owner-only temporary file, then atomically rename it. Relationship events are
 append-only and event IDs are deduplicated.
+
+The Pear worker owns a separate named Corestore feed for IPC audit metadata. Records contain only the
+request ID, command/event type, timestamp, and record kind. Hypercore supplies append-only storage;
+Autobase is not used because this local audit feed has no multi-writer merge requirement.
 
 Wallet recovery material uses the `io.scoutpass.wallet` macOS Keychain service and never appears in
 the JSON state. Clearing app data intentionally leaves Keychain material untouched.

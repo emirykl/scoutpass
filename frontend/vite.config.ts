@@ -3,6 +3,7 @@ import { defineConfig } from "vitest/config";
 import { fileURLToPath, URL } from "node:url";
 
 export default defineConfig({
+  base: "./",
   plugins: [react()],
   resolve: {
     alias: [

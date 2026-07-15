@@ -36,9 +36,11 @@ describe("tryout and wallet UI", () => {
   it("shows a testnet-only WDK wallet without exposing recovery material", () => {
     render(<WalletPanel role="player" relationshipId="relationship_demo_001" />);
 
-    expect(screen.getByText("Ethereum Sepolia · Testnet only")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Create or load wallet" })).toBeDisabled();
-    expect(screen.getByText(/Recovery material remains in macOS Keychain/)).toBeInTheDocument();
+    expect(screen.getByText("Testnet only")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Set up my wallet" })).toBeDisabled();
+    expect(
+      screen.getByText(/Wallet recovery stays protected in macOS Keychain/)
+    ).toBeInTheDocument();
     expect(document.body.textContent?.toLowerCase()).not.toContain("seed phrase");
   });
 
@@ -108,13 +110,13 @@ describe("tryout and wallet UI", () => {
       );
     };
     render(<PaymentHarness />);
-    fireEvent.click(screen.getByRole("button", { name: "Review travel support" }));
+    fireEvent.click(screen.getByRole("button", { name: "Prepare payment summary" }));
     expect(await screen.findByText("25.50 USD₮")).toBeInTheDocument();
     expect(request).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole("button", { name: "Confirm and sign" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Send test payment" })).toBeDisabled();
 
-    fireEvent.click(screen.getByRole("checkbox", { name: /I reviewed the invitation/ }));
-    fireEvent.click(screen.getByRole("button", { name: "Confirm and sign" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: /I checked the player/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Send test payment" }));
     expect(request).toHaveBeenCalledTimes(2);
     expect(request.mock.calls[1]?.[0]).toMatchObject({
       type: "payment.confirm",

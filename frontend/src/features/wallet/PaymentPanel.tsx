@@ -63,7 +63,7 @@ export function PaymentPanel({ role, invitation, payment, onPaymentChange }: Pay
   if (role === "player") {
     return (
       <PaymentResult
-        title="Travel support"
+        title="Payment status"
         invitation={invitation}
         payment={payment}
         onRefresh={() =>
@@ -78,17 +78,16 @@ export function PaymentPanel({ role, invitation, payment, onPaymentChange }: Pay
     <section className="panel" aria-labelledby="payment-review-title">
       <div className="section-heading">
         <div>
-          <p className="eyebrow">Reviewed travel support</p>
-          <h2 id="payment-review-title">Payment review</h2>
+          <p className="eyebrow">Step 2</p>
+          <h2 id="payment-review-title">Review and send</h2>
         </div>
-        <span className="testnet-badge">Ethereum Sepolia · Testnet only</span>
+        <span className="testnet-badge">Testnet only</span>
       </div>
 
       {payment === undefined ? (
         <div className="payment-empty">
           <p className="summary">
-            Review is available only after the player accepts an invitation and shares a receive
-            address through this scouting connection.
+            The player must accept the invitation and share a public address first.
           </p>
           <button
             type="button"
@@ -99,7 +98,7 @@ export function PaymentPanel({ role, invitation, payment, onPaymentChange }: Pay
               void run({ type: "payment.review", payload: { invitationId: invitation.id } })
             }
           >
-            Review travel support
+            Prepare payment summary
           </button>
         </div>
       ) : (
@@ -113,7 +112,7 @@ export function PaymentPanel({ role, invitation, payment, onPaymentChange }: Pay
                   checked={confirmedReview}
                   onChange={(event) => setConfirmedReview(event.target.checked)}
                 />
-                I reviewed the invitation, player address, amount, network and estimated fee.
+                I checked the player, amount and destination address.
               </label>
               <div className="response-actions">
                 <button
@@ -127,7 +126,7 @@ export function PaymentPanel({ role, invitation, payment, onPaymentChange }: Pay
                     })
                   }
                 >
-                  Confirm and sign
+                  Send test payment
                 </button>
                 <button
                   type="button"
@@ -137,7 +136,7 @@ export function PaymentPanel({ role, invitation, payment, onPaymentChange }: Pay
                     void run({ type: "payment.reject", payload: { proposalId: payment.id } })
                   }
                 >
-                  Reject payment
+                  Cancel
                 </button>
               </div>
             </>
@@ -151,7 +150,7 @@ export function PaymentPanel({ role, invitation, payment, onPaymentChange }: Pay
                 void run({ type: "payment.status.get", payload: { paymentId: payment.id } })
               }
             >
-              Refresh transaction status
+              Check payment status
             </button>
           ) : null}
         </div>
@@ -160,7 +159,7 @@ export function PaymentPanel({ role, invitation, payment, onPaymentChange }: Pay
         This is optional testnet travel support, not escrow, a fee, identity verification or a
         recruitment guarantee.
       </p>
-      {!runtimeAvailable ? <div className="warning">Desktop runtime required for WDK.</div> : null}
+      {!runtimeAvailable ? <div className="warning">Available in the desktop app.</div> : null}
       {error ? <p className="error">{error}</p> : null}
     </section>
   );
@@ -183,19 +182,19 @@ function PaymentResult({
     <section className="panel" aria-labelledby="player-payment-title">
       <div className="section-heading">
         <div>
-          <p className="eyebrow">Testnet transaction</p>
+          <p className="eyebrow">Step 2</p>
           <h2 id="player-payment-title">{title}</h2>
         </div>
-        <span className="testnet-badge">Ethereum Sepolia · Testnet only</span>
+        <span className="testnet-badge">Testnet only</span>
       </div>
       {payment === undefined ? (
-        <p className="summary">No travel support transaction has been received.</p>
+        <p className="summary">No test payment has been received yet.</p>
       ) : (
         <div className="payment-review">
           <PaymentFacts invitation={invitation} payment={payment} />
           {payment.status === "pending" ? (
             <button type="button" className="secondary-button" disabled={busy} onClick={onRefresh}>
-              Refresh transaction status
+              Check payment status
             </button>
           ) : null}
         </div>

@@ -12,12 +12,16 @@ mock data, a fake transaction, or a cloud AI substitute.
 - [x] `npm run test:keychain` passed against macOS Keychain.
 - [x] `npm run test:wdk:network` read a real Sepolia balance through WDK.
 - [x] `npx qvac doctor --json` passed required host checks.
+- [x] `npm run test:pear-worker` persisted and reopened two Corestore/Hypercore audit records.
+- [x] `npm run desktop:package` produced the macOS arm64 `.app` bundle.
+- [x] Packaged Player and Scout smoke runs injected the preload bridge and returned runtime status.
+- [x] QVAC Qwen3 0.6B Q4 was cached and produced a schema-valid report.
 - [x] Public GitHub page returned anonymous HTTP 200.
 
 ## Preparation
 
 - [ ] Close memory-heavy apps; QVAC doctor reports at least 2 GB available RAM.
-- [ ] Selected QVAC model is downloaded and cached before the demo.
+- [x] Selected QVAC model is downloaded and cached before the demo.
 - [ ] Player and Scout use clean, isolated data directories.
 - [ ] Scout wallet has enough Sepolia ETH for gas.
 - [ ] Scout wallet has enough organizer-issued test USD₮.
@@ -37,13 +41,13 @@ QVAC modelInfo:
 
 ## QVAC local/offline test
 
-- [ ] Run `npm run qvac:report` online once; a schema-valid report is printed.
-- [ ] Record/downloaded model information and retain no cloud API key.
+- [x] Run `npm run qvac:report` online once; a schema-valid report is printed.
+- [x] Record/downloaded model information and retain no cloud API key.
 - [ ] Disable all network connectivity.
 - [ ] Run `npm run qvac:report` again successfully.
-- [ ] Report contains summary, positional profile, strengths, development areas, systems, questions,
+- [x] Report contains summary, positional profile, strengths, development areas, systems, questions,
       limitations, timestamp, and real model info.
-- [ ] Invalid/malformed fixture tests remain green after the model run.
+- [x] Invalid/malformed fixture tests remain green after the model run.
 - [ ] Re-enable networking only after offline evidence is captured.
 
 ## Two clean desktop instances

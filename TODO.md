@@ -15,7 +15,7 @@ Bu belge, ScoutPass'in Tether Developers Cup için çalışan MVP'sini üretme s
 - [x] Normal uygulama verisi ile cüzdan sırlarını kesin olarak ayır.
 - [x] İlk MVP'de Autobase ekleme; yalnızca gerçek multi-writer ihtiyacı kanıtlanırsa değerlendir.
 - [ ] Tüm zamanları ISO 8601 UTC olarak sakla, arayüzde kullanıcının yerel saatine dönüştür.
-- [ ] Tek uygulamanın `player` ve `scout` rolleriyle iki ayrı yerel instance olarak çalışmasını sağla.
+- [x] Tek uygulamanın `player` ve `scout` rolleriyle iki ayrı yerel instance olarak çalışmasını sağla.
 
 Planlanan dizin sınırları:
 
@@ -129,193 +129,193 @@ scoutpass/
 
 ### Frontend profil akışı
 
-- [ ] Welcome ekranında Player/Scout rol seçimini, gizlilik özetini ve testnet uyarısını göster.
-- [ ] Oyuncu profil formunu React Hook Form + Zod ile oluştur.
-- [ ] Seçilen pozisyona göre performans alanlarını dinamik göster.
-- [ ] Taslak kaydetme ve profil tamamlama göstergesi ekle.
-- [ ] Demo profili yükleme aksiyonu ekle ve demo olduğunu görünür tut.
-- [ ] Rapor üretiminden önce QVAC'a gidecek yerel veri önizlemesini göster.
+- [x] Welcome ekranında Player/Scout rol seçimini, gizlilik özetini ve testnet uyarısını göster.
+- [x] Oyuncu profil formunu React Hook Form + Zod ile oluştur.
+- [x] Seçilen pozisyona göre performans alanlarını dinamik göster.
+- [x] Taslak kaydetme ve profil tamamlama göstergesi ekle.
+- [x] Demo profili yükleme aksiyonu ekle ve demo olduğunu görünür tut.
+- [x] Rapor üretiminden önce QVAC'a gidecek yerel veri önizlemesini göster.
 
 ### QVAC adapter
 
-- [ ] `LocalReportGenerator` interface'ini oluştur.
-- [ ] QVAC adapter'ını resmî SDK ile uygula.
-- [ ] Model bulunamadı, yükleniyor, hazır, hata ve unload durumlarını modelle.
-- [ ] Prompt builder'ı saf fonksiyon olarak oluştur; oyuncu istatistiklerini pozisyona göre bağlamlandır.
-- [ ] Prompt içinde JSON-only çıktı, etik sınırlar ve zorunlu disclaimer talimatını kullan.
-- [ ] Model çıktısından olası markdown code fence'i güvenli biçimde ayıkla.
-- [ ] JSON parse et ve `ScoutReport` Zod şemasıyla doğrula.
-- [ ] Geçersiz çıktı için yalnızca bir yerel retry uygula.
-- [ ] İkinci hata sonrası rapor uydurmadan açık hata göster.
-- [ ] `generatedAt` ve gerçek `modelInfo` metadata'sını kaydet.
-- [ ] Uygulama kapanırken model kaynaklarını serbest bırak.
+- [x] `LocalReportGenerator` interface'ini oluştur.
+- [x] QVAC adapter'ını resmî SDK ile uygula.
+- [x] Model bulunamadı, yükleniyor, hazır, hata ve unload durumlarını modelle.
+- [x] Prompt builder'ı saf fonksiyon olarak oluştur; oyuncu istatistiklerini pozisyona göre bağlamlandır.
+- [x] Prompt içinde JSON-only çıktı, etik sınırlar ve zorunlu disclaimer talimatını kullan.
+- [x] Model çıktısından olası markdown code fence'i güvenli biçimde ayıkla.
+- [x] JSON parse et ve `ScoutReport` Zod şemasıyla doğrula.
+- [x] Geçersiz çıktı için yalnızca bir yerel retry uygula.
+- [x] İkinci hata sonrası rapor uydurmadan açık hata göster.
+- [x] `generatedAt` ve gerçek `modelInfo` metadata'sını kaydet.
+- [x] Uygulama kapanırken model kaynaklarını serbest bırak.
 - [ ] İnternet bağlantısı kapalıyken rapor üretimini doğrula.
 
 ### Rapor ekranı
 
-- [ ] Özet, pozisyon profili, güçlü yanlar, gelişim alanları, oyun tarzı, sistemler ve scout sorularını göster.
-- [ ] Kanıt ve confidence seviyelerini erişilebilir biçimde göster.
-- [ ] Zorunlu “oyuncu tarafından sağlanan/doğrulanmamış veri” disclaimer'ını sabit göster.
+- [x] Özet, pozisyon profili, güçlü yanlar, gelişim alanları, oyun tarzı, sistemler ve scout sorularını göster.
+- [x] Kanıt ve confidence seviyelerini erişilebilir biçimde göster.
+- [x] Zorunlu “oyuncu tarafından sağlanan/doğrulanmamış veri” disclaimer'ını sabit göster.
 - [ ] Raporu düzenleme ile yeniden üretme eylemlerini birbirinden ayır.
 - [ ] Yükleme, model yok, model hatası ve geçersiz çıktı durumlarını tasarla.
 
 ### Faz 2 testleri ve çıkış kriteri
 
-- [ ] QVAC response parsing integration testleri geçiyor.
-- [ ] Geçerli, code-fenced, malformed ve schema-invalid çıktı fixture'ları test ediliyor.
+- [x] QVAC response parsing integration testleri geçiyor.
+- [x] Geçerli, code-fenced, malformed ve schema-invalid çıktı fixture'ları test ediliyor.
 - [ ] Gerçek QVAC modeli offline çalışarak geçerli bir rapor üretiyor.
-- [ ] Hiçbir cloud AI paketi, endpoint'i veya API anahtarı yok.
+- [x] Hiçbir cloud AI paketi, endpoint'i veya API anahtarı yok.
 
 ## Faz 3 — Pears bağlantısı ve doğrulanmış test olayı
 
-- [ ] `PeerTransport` interface'ini tanımla.
-- [ ] Güncel `pear-runtime` yaklaşımıyla yerel networking runtime'ını kur.
-- [ ] Hyperswarm ile ilişkiye özel topic/invite üretimini uygula.
-- [ ] Invite bilgisinde yalnızca bağlantı kurmak için gerekli public metadata'yı taşı.
-- [ ] Scout “Create scouting connection” ile tek ilişkiye özel invite oluşturabilsin.
-- [ ] Oyuncu invite kodunu yapıştırabilsin; QR yalnızca zaman kalırsa eklensin.
-- [ ] Bağlanıyor, bağlı, timeout, bulunamadı ve yeniden bağlanıyor durumlarını göster.
-- [ ] İki instance arasında küçük, doğrulanmış bir test olayı gönder.
-- [ ] Gelen byte sayısına katı payload limiti uygula.
-- [ ] Mesajı işlemeden önce JSON/encoding, Zod schema, event type ve protocol version doğrula.
-- [ ] Bilinmeyen event tipini, bozuk payload'ı ve oversized mesajı reddet.
-- [ ] Event ID deduplication ve yerel append-only iletişim geçmişi ekle.
-- [ ] Private key/topic secret değerlerini loglama.
-- [ ] Bağlantı kesilip yeniden kurulduğunda durumun toparlanmasını sağla.
+- [x] `PeerTransport` interface'ini tanımla.
+- [x] Güncel `pear-runtime` yaklaşımıyla yerel networking runtime'ını kur.
+- [x] Hyperswarm ile ilişkiye özel topic/invite üretimini uygula.
+- [x] Invite bilgisinde yalnızca bağlantı kurmak için gerekli public metadata'yı taşı.
+- [x] Scout “Create scouting connection” ile tek ilişkiye özel invite oluşturabilsin.
+- [x] Oyuncu invite kodunu yapıştırabilsin; QR yalnızca zaman kalırsa eklensin.
+- [x] Bağlanıyor, bağlı, timeout, bulunamadı ve yeniden bağlanıyor durumlarını göster.
+- [x] İki instance arasında küçük, doğrulanmış bir test olayı gönder.
+- [x] Gelen byte sayısına katı payload limiti uygula.
+- [x] Mesajı işlemeden önce JSON/encoding, Zod schema, event type ve protocol version doğrula.
+- [x] Bilinmeyen event tipini, bozuk payload'ı ve oversized mesajı reddet.
+- [x] Event ID deduplication ve yerel append-only iletişim geçmişi ekle.
+- [x] Private key/topic secret değerlerini loglama.
+- [x] Bağlantı kesilip yeniden kurulduğunda durumun toparlanmasını sağla.
 
 ### Faz 3 çıkış kriteri
 
-- [ ] Aynı makinede Player ve Scout instance'ları invite ile bağlanıyor.
-- [ ] Doğrulanmış test olayı iki yönde gidiyor.
-- [ ] Malformed, unknown, duplicate ve oversized olay testleri geçiyor.
-- [ ] Player–Scout iletişiminde merkezi backend kullanılmıyor.
+- [x] Aynı makinede Player ve Scout instance'ları invite ile bağlanıyor.
+- [x] Doğrulanmış test olayı iki yönde gidiyor.
+- [x] Malformed, unknown, duplicate ve oversized olay testleri geçiyor.
+- [x] Player–Scout iletişiminde merkezi backend kullanılmıyor.
 
 ## Faz 4 — Gerçek seçmeli profil paylaşımı
 
-- [ ] Paylaşım seçeneklerini varsayılan olarak yalnızca temel futbol profili, oyuncu özeti ve güçlü yanlar açık gelecek şekilde kur.
-- [ ] İletişim, istatistik, gelişim alanları, oyun tarzı, coach notes ve scout questions seçeneklerini varsayılan kapalı tut.
-- [ ] Seçimlerden yeni bir sanitized `SharedPlayerPackage` üret.
-- [ ] Gönderilecek paketin birebir JSON/insan okunur önizlemesini göster.
-- [ ] Paket boyutunu göndermeden önce hesapla ve limiti aşarsa engelle.
-- [ ] Oyuncudan açık paylaşım onayı al.
-- [ ] Gerçek paketi Pears üzerinden scout'a gönder.
-- [ ] Scout alınan paketi schema ile doğrulayıp yerel olarak saklasın.
-- [ ] Scout yalnızca paylaşılan alanları görebilsin.
-- [ ] `PlayerProfileShared` ve `ProfileReceived` olaylarını ilişki geçmişine ekle.
-- [ ] Aynı paketin tekrar gönderilmesini idempotent işle.
+- [x] Paylaşım seçeneklerini varsayılan olarak yalnızca temel futbol profili, oyuncu özeti ve güçlü yanlar açık gelecek şekilde kur.
+- [x] İletişim, istatistik, gelişim alanları, oyun tarzı, coach notes ve scout questions seçeneklerini varsayılan kapalı tut.
+- [x] Seçimlerden yeni bir sanitized `SharedPlayerPackage` üret.
+- [x] Gönderilecek paketin birebir JSON/insan okunur önizlemesini göster.
+- [x] Paket boyutunu göndermeden önce hesapla ve limiti aşarsa engelle.
+- [x] Oyuncudan açık paylaşım onayı al.
+- [x] Gerçek paketi Pears üzerinden scout'a gönder.
+- [x] Scout alınan paketi schema ile doğrulayıp yerel olarak saklasın.
+- [x] Scout yalnızca paylaşılan alanları görebilsin.
+- [x] `PlayerProfileShared` ve `ProfileReceived` olaylarını ilişki geçmişine ekle.
+- [x] Aynı paketin tekrar gönderilmesini idempotent işle.
 
 ### Faz 4 çıkış kriteri
 
-- [ ] Seçilmeyen hassas alanlar serialized payload içinde bulunmuyor.
-- [ ] Player önizlemesi ile scout'un aldığı payload birebir uyuşuyor.
-- [ ] İki instance arasında gerçek profil transfer integration testi geçiyor.
+- [x] Seçilmeyen hassas alanlar serialized payload içinde bulunmuyor.
+- [x] Player önizlemesi ile scout'un aldığı payload birebir uyuşuyor.
+- [x] İki instance arasında gerçek profil transfer integration testi geçiyor.
 
 ## Faz 5 — P2P deneme daveti
 
-- [ ] Scout için paylaşılan oyuncu inceleme ekranını oluştur.
-- [ ] Scout'un yerel ve paylaşılmayan özel değerlendirme notlarını ekle.
-- [ ] Deneme daveti formundaki bütün zorunlu alanları uygula.
-- [ ] Opsiyonel seyahat desteği tutarı ve asset bilgisini davete ekle.
-- [ ] Taslak daveti göndermeden önce tam önizleme göster.
-- [ ] `TryoutInvitationEvent` olayını Pears üzerinden gönder.
-- [ ] Player daveti Received durumunda görsün.
-- [ ] Accept, Decline ve Request clarification yanıtlarını uygula.
-- [ ] Yanıtı `InvitationResponseEvent` olarak scout'a gönder.
-- [ ] Draft, Sent, Received, Accepted, Declined, Expired ve Travel support sent durumlarını state machine ile yönet.
-- [ ] Süresi geçmiş davetin kabul edilmesini engelle.
-- [ ] Davet ve yanıt geçmişini iki tarafta yerel olarak sakla.
+- [x] Scout için paylaşılan oyuncu inceleme ekranını oluştur.
+- [x] Scout'un yerel ve paylaşılmayan özel değerlendirme notlarını ekle.
+- [x] Deneme daveti formundaki bütün zorunlu alanları uygula.
+- [x] Opsiyonel seyahat desteği tutarı ve asset bilgisini davete ekle.
+- [x] Taslak daveti göndermeden önce tam önizleme göster.
+- [x] `TryoutInvitationEvent` olayını Pears üzerinden gönder.
+- [x] Player daveti Received durumunda görsün.
+- [x] Accept, Decline ve Request clarification yanıtlarını uygula.
+- [x] Yanıtı `InvitationResponseEvent` olarak scout'a gönder.
+- [x] Draft, Sent, Received, Accepted, Declined, Expired ve Travel support sent durumlarını state machine ile yönet.
+- [x] Süresi geçmiş davetin kabul edilmesini engelle.
+- [x] Davet ve yanıt geçmişini iki tarafta yerel olarak sakla.
 
 ### Faz 5 çıkış kriteri
 
-- [ ] Scout daveti gönderiyor, Player alıyor ve kabul yanıtı Scout'a ulaşıyor.
-- [ ] Davet delivery integration testi ve bütün durum geçişi testleri geçiyor.
-- [ ] Seyahat desteği yalnızca Accepted davet için başlatılabiliyor.
+- [x] Scout daveti gönderiyor, Player alıyor ve kabul yanıtı Scout'a ulaşıyor.
+- [x] Davet delivery integration testi ve bütün durum geçişi testleri geçiyor.
+- [x] Seyahat desteği yalnızca Accepted davet için başlatılabiliyor.
 
 ## Faz 6 — WDK self-custodial testnet cüzdanı
 
-- [ ] `WalletGateway` interface'ini tanımla.
-- [ ] Seçilen zincirin resmî WDK modülünü kur ve sürümünü sabitle.
-- [ ] Player ve Scout için ayrı self-custodial wallet initialize/create akışı oluştur.
-- [ ] Seed phrase/private key için platformun güvenli depolama seçeneğini uygula.
-- [ ] Seed phrase'i log, analytics, error message, normal state veya repository'ye sokma.
-- [ ] Gerekliyse seed phrase yedekleme ekranını yalnızca açık kullanıcı eylemiyle göster; ekran görüntüsü/log riskini belirt.
-- [ ] Public receive address'i ve test balance'ı göster.
-- [ ] Player'ın public receive address'ini ilişki içinde paylaşmasını açık onaya bağla.
-- [ ] Network ve “Testnet only” etiketini bütün wallet/payment ekranlarında göster.
-- [ ] Wallet initialization failure ve balance query failure durumlarını göster.
+- [x] `WalletGateway` interface'ini tanımla.
+- [x] Seçilen zincirin resmî WDK modülünü kur ve sürümünü sabitle.
+- [x] Player ve Scout için ayrı self-custodial wallet initialize/create akışı oluştur.
+- [x] Seed phrase/private key için platformun güvenli depolama seçeneğini uygula.
+- [x] Seed phrase'i log, analytics, error message, normal state veya repository'ye sokma.
+- [x] MVP'de seed phrase yedekleme ekranı gösterme; recovery material yalnızca macOS Keychain'de kalsın.
+- [x] Public receive address'i ve test balance'ı göster.
+- [x] Player'ın public receive address'ini ilişki içinde paylaşmasını açık onaya bağla.
+- [x] Network ve “Testnet only” etiketini bütün wallet/payment ekranlarında göster.
+- [x] Wallet initialization failure ve balance query failure durumlarını göster.
 - [ ] Test faucet ile iki demo cüzdanını fonlama adımlarını belgeleyip doğrula.
 
 ### Faz 6 çıkış kriteri
 
-- [ ] İki instance farklı wallet address üretiyor/yüklüyor.
-- [ ] Yeniden başlatmada güvenli wallet erişimi çalışıyor.
-- [ ] Test balance gerçek ağdan okunuyor.
-- [ ] Hiçbir secret source control, log veya normal app DB içinde değil.
+- [x] İki instance farklı wallet address üretiyor/yüklüyor.
+- [x] Yeniden başlatmada güvenli wallet erişimi çalışıyor.
+- [x] Test balance gerçek ağdan okunuyor.
+- [x] Hiçbir secret source control, log veya normal app DB içinde değil.
 
 ## Faz 7 — İncelenen ve açıkça onaylanan test USD₮ ödemesi
 
-- [ ] Ödemeyi yalnızca kabul edilmiş davete bağla.
-- [ ] Scout payment review ekranında invitation, network, asset, destination, amount ve fee bilgilerini göster.
-- [ ] Player address'ini P2P ilişkisi ve davetle ilişkilendirerek doğrula.
-- [ ] Aynı davet için duplicate payment attempt kontrolü ekle.
-- [ ] `TravelSupportProposedEvent` olayını oluştur ve sakla.
-- [ ] Kullanıcı açıkça Confirm and sign demeden transaction hazırlama/imzalama/gönderme.
-- [ ] WDK ile test USD₮ transaction'ını hazırla, imzala ve yayınla.
-- [ ] Pending, confirmed, rejected ve failed durumlarını gerçek sonuçtan göster.
-- [ ] Transaction identifier/hash bilgisini iki tarafta göster.
-- [ ] `TravelSupportSentEvent` olayını Pears üzerinden Player'a gönder.
-- [ ] Player gelen ödemeyi davetle ilişkilendirilmiş olarak görsün.
-- [ ] Insufficient balance, user rejection, RPC/indexer error ve timeout durumlarını göster.
-- [ ] Ödemeyi escrow, doğrulama, ücret veya işe alım garantisi olarak sunma.
+- [x] Ödemeyi yalnızca kabul edilmiş davete bağla.
+- [x] Scout payment review ekranında invitation, network, asset, destination, amount ve fee bilgilerini göster.
+- [x] Player address'ini P2P ilişkisi ve davetle ilişkilendirerek doğrula.
+- [x] Aynı davet için duplicate payment attempt kontrolü ekle.
+- [x] `TravelSupportProposedEvent` olayını oluştur ve sakla.
+- [x] Kullanıcı açıkça Confirm and sign demeden transaction hazırlama/imzalama/gönderme.
+- [x] WDK ile test USD₮ transaction'ını hazırla, imzala ve yayınla.
+- [x] Pending, confirmed, rejected ve failed durumlarını gerçek sonuçtan göster.
+- [x] Transaction identifier/hash bilgisini iki tarafta göster.
+- [x] `TravelSupportSentEvent` olayını Pears üzerinden Player'a gönder.
+- [x] Player gelen ödemeyi davetle ilişkilendirilmiş olarak görsün.
+- [x] Insufficient balance, user rejection, RPC/indexer error ve timeout durumlarını göster.
+- [x] Ödemeyi escrow, doğrulama, ücret veya işe alım garantisi olarak sunma.
 
 ### Faz 7 çıkış kriteri
 
 - [ ] Scout gerçek WDK testnet transaction'ını açık onayla gönderiyor.
-- [ ] Player transaction durumunu ve identifier'ı görüyor.
-- [ ] Transaction preparation integration testi ve duplicate prevention testi geçiyor.
-- [ ] Fake success/demo transaction fallback bulunmuyor.
+- [x] Player transaction durumunu ve identifier'ı görüyor.
+- [x] Transaction preparation integration testi ve duplicate prevention testi geçiyor.
+- [x] Fake success/demo transaction fallback bulunmuyor.
 
 ## Faz 8 — Ekranları tek ürün akışında birleştirme
 
-- [ ] Player dashboard: profil tamamlanması, son rapor, bağlantı, davet ve ödeme özeti.
-- [ ] Scout dashboard: bağlantılar, alınan profiller, davetler ve destek geçmişi.
-- [ ] Bağlantı durumunu ilgili bütün ekranlarda görünür tut.
-- [ ] Activity timeline'ı domain olaylarından üret.
-- [ ] Settings: QVAC model durumu, Pears durumu, wallet network, yerel veri temizleme ve sanitize debug export.
-- [ ] Yerel veriyi temizleme öncesinde kapsamı gösterip açık onay al.
-- [ ] Klavye erişilebilirliği, focus state, form label ve temel kontrast kontrollerini tamamla.
-- [ ] Wallet jargonunu azalt; futbol operasyonları odaklı metinler kullan.
+- [x] Player dashboard: profil tamamlanması, son rapor, bağlantı, davet ve ödeme özeti.
+- [x] Scout dashboard: bağlantılar, alınan profiller, davetler ve destek geçmişi.
+- [x] Bağlantı durumunu ilgili bütün ekranlarda görünür tut.
+- [x] Activity timeline'ı domain olaylarından üret.
+- [x] Settings: QVAC model durumu, Pears durumu, wallet network, yerel veri temizleme ve sanitize debug export.
+- [x] Yerel veriyi temizleme öncesinde kapsamı gösterip açık onay al.
+- [x] Klavye erişilebilirliği, focus state, form label ve temel kontrast kontrollerini tamamla.
+- [x] Wallet jargonunu azalt; futbol operasyonları odaklı metinler kullan.
 - [ ] Dark navy/neutral, profesyonel scouting görsel sistemini uygula.
-- [ ] Dar masaüstü penceresinde temel responsive davranışı doğrula.
+- [x] Dar masaüstü penceresinde temel responsive davranışı doğrula.
 
 ## Faz 9 — Güvenlik, hata yönetimi ve kalite kapısı
 
-- [ ] `docs/threat-model.md` oluştur.
-- [ ] Malicious P2P payload, oversized message, fake scout identity, self-reported data, oversharing, secret exposure, replay, duplicate payment ve corrupted storage tehditlerini işle.
-- [ ] Scout/club kimliğinin MVP'de doğrulanmadığını görünür biçimde belirt.
-- [ ] Merkezi error mapping ile kullanıcıya teknik sır sızdırmayan açıklamalar göster.
+- [x] `docs/threat-model.md` oluştur.
+- [x] Malicious P2P payload, oversized message, fake scout identity, self-reported data, oversharing, secret exposure, replay, duplicate payment ve corrupted storage tehditlerini işle.
+- [x] Scout/club kimliğinin MVP'de doğrulanmadığını görünür biçimde belirt.
+- [x] Merkezi error mapping ile kullanıcıya teknik sır sızdırmayan açıklamalar göster.
 - [ ] QVAC model yok/yükleme/invalid output hatalarını manuel test et.
 - [ ] Pear not found/timeout/malformed/reconnect durumlarını manuel test et.
 - [ ] WDK init/insufficient balance/reject/pending/failure durumlarını manuel test et.
-- [ ] Uygulamada cloud AI, telemetry veya izinsiz dış endpoint olmadığını dependency ve source audit ile doğrula.
-- [ ] Dependency vulnerability ve license kontrolü yap; bulunan riskleri belgeleyip çöz.
-- [ ] Secret scan çalıştır.
-- [ ] Production build içinde demo secret, seed veya debug log bulunmadığını doğrula.
+- [x] Uygulamada cloud AI, telemetry veya izinsiz dış endpoint olmadığını dependency ve source audit ile doğrula.
+- [x] Dependency vulnerability ve license kontrolü yap; bulunan riskleri belgeleyip çöz.
+- [x] Secret scan çalıştır.
+- [x] Production build içinde demo secret, seed veya debug log bulunmadığını doğrula.
 - [ ] İki temiz instance ile baştan sona smoke test çalıştır.
 
 ## Faz 10 — Yarışma teslimatı
 
 - [ ] `README.md`: problem, çözüm, üç stack'in gerçek kullanımı ve ekran görüntüleri.
-- [ ] Yalnızca gerçekten çalıştırılmış kurulum komutlarını README'ye yaz.
-- [ ] QVAC model kurulumu ve offline doğrulama adımlarını yaz.
+- [x] Yalnızca gerçekten çalıştırılmış kurulum komutlarını README'ye yaz.
+- [x] QVAC model kurulumu ve offline doğrulama adımlarını yaz.
 - [ ] Pear CLI ile iki instance başlatma adımlarını yaz.
-- [ ] WDK testnet/faucet kurulumunu ve gerçek para kullanılmaması uyarısını yaz.
-- [ ] Kullanılan bütün dış servis, API, model ve pre-built bileşenleri listele.
-- [ ] `docs/architecture.md` içinde container/component ve veri akışı diyagramlarını ekle.
-- [ ] `docs/privacy.md` içinde hangi verinin nerede kaldığını ve neyin paylaşıldığını açıkla.
-- [ ] `docs/demo-script.md` içinde üç dakikalık zamanlanmış demo senaryosu oluştur.
+- [x] WDK testnet/faucet kurulumunu ve gerçek para kullanılmaması uyarısını yaz.
+- [x] Kullanılan bütün dış servis, API, model ve pre-built bileşenleri listele.
+- [x] `docs/architecture.md` içinde container/component ve veri akışı diyagramlarını ekle.
+- [x] `docs/privacy.md` içinde hangi verinin nerede kaldığını ve neyin paylaşıldığını açıkla.
+- [x] `docs/demo-script.md` içinde üç dakikalık zamanlanmış demo senaryosu oluştur.
 - [ ] `docs/manual-test-checklist.md` oluştur ve iki temiz makine/instance üzerinde işaretle.
-- [ ] Mevcut MVP sınırlamalarını ve gelecek yol haritasını dürüstçe yaz.
+- [x] Mevcut MVP sınırlamalarını ve gelecek yol haritasını dürüstçe yaz.
 - [ ] Public GitHub repo, lisans, görünür commit geçmişi ve DoraHacks bağlantılarını doğrula.
 - [ ] En fazla üç dakikalık unlisted YouTube demo videosunu kaydet.
 - [ ] Videoda QVAC offline üretim, Pears P2P transfer ve WDK testnet transaction kanıtını göster.

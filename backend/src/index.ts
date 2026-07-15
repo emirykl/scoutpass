@@ -32,4 +32,7 @@ export * from "./protocol/peer-wire.js";
 export * from "./runtime/pear-runtime-host.js";
 export * from "./runtime/index.js";
 export * from "./runtime/phase-seven-eight-command-handler.js";
+export * from "./runtime/local-runtime-command-handler.js";
+export * from "./runtime/desktop-runtime.js";
+export * from "./runtime/pear-worker-protocol.js";
 export * from "./seed/demo-player.js";

@@ -110,11 +110,19 @@ export function WalletPanel({ role, relationshipId, onWalletChange }: WalletPane
     <section className="panel" aria-labelledby={`wallet-title-${role}`}>
       <div className="section-heading">
         <div>
-          <p className="eyebrow">WDK self-custody</p>
-          <h2 id={`wallet-title-${role}`}>Travel support wallet</h2>
+          <p className="eyebrow">Step 1</p>
+          <h2 id={`wallet-title-${role}`}>
+            {role === "player" ? "Receive travel support" : "Set up travel support"}
+          </h2>
         </div>
-        <span className="testnet-badge">Ethereum Sepolia · Testnet only</span>
+        <span className="testnet-badge">Testnet only</span>
       </div>
+
+      <p className="summary">
+        {role === "player"
+          ? "Create your test wallet, then share only its public address with the connected scout."
+          : "Create the scout test wallet used to send optional travel support."}
+      </p>
 
       {wallet === undefined ? (
         <button
@@ -123,20 +131,24 @@ export function WalletPanel({ role, relationshipId, onWalletChange }: WalletPane
           disabled={!runtimeAvailable || status === "loading"}
           onClick={() => void initialize()}
         >
-          {status === "loading" ? "Initializing" : "Create or load wallet"}
+          {status === "loading"
+            ? "Setting up..."
+            : role === "player"
+              ? "Set up my wallet"
+              : "Set up scout wallet"}
         </button>
       ) : (
         <div className="wallet-details">
           <div>
-            <span>Receive address</span>
+            <span>{role === "player" ? "My public address" : "Scout wallet address"}</span>
             <code>{wallet.address}</code>
           </div>
           <div>
-            <span>Test USD₮ balance</span>
+            <span>Test balance</span>
             <strong>{balance ?? "Not loaded"}</strong>
           </div>
           <button type="button" className="secondary-button" onClick={() => void refreshBalance()}>
-            Refresh balance
+            Check balance
           </button>
           {role === "player" ? (
             <>
@@ -149,7 +161,7 @@ export function WalletPanel({ role, relationshipId, onWalletChange }: WalletPane
                     setAddressShared(false);
                   }}
                 />
-                Share this public receive address with the connected scout.
+                I want to share this public address with the connected scout.
               </label>
               <button
                 type="button"
@@ -157,9 +169,9 @@ export function WalletPanel({ role, relationshipId, onWalletChange }: WalletPane
                 disabled={!shareApproved}
                 onClick={() => void shareAddress()}
               >
-                Share receive address
+                Share address with scout
               </button>
-              {addressShared ? <p className="success">Public address shared.</p> : null}
+              {addressShared ? <p className="success">Address shared with the scout.</p> : null}
             </>
           ) : null}
         </div>
@@ -167,11 +179,13 @@ export function WalletPanel({ role, relationshipId, onWalletChange }: WalletPane
 
       {role === "scout" && remotePlayerWallet ? (
         <div className="notice">
-          Player receive address: <code>{remotePlayerWallet.address}</code>
+          Player address received: <code>{remotePlayerWallet.address}</code>
         </div>
+      ) : role === "scout" ? (
+        <div className="notice">Waiting for the player to share a public address.</div>
       ) : null}
-      <p className="muted">Recovery material remains in macOS Keychain and is never shown here.</p>
-      {!runtimeAvailable ? <div className="warning">Desktop runtime required for WDK.</div> : null}
+      <p className="muted">Wallet recovery stays protected in macOS Keychain.</p>
+      {!runtimeAvailable ? <div className="warning">Available in the desktop app.</div> : null}
       {error ? <p className="error">{error}</p> : null}
     </section>
   );

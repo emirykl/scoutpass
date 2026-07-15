@@ -7,6 +7,6 @@
     "rootDir": "src",
     "sourceMap": true
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.cts"],
   "exclude": ["tests", "dist"]
 }

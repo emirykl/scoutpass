@@ -40,7 +40,10 @@ a hosted AI fallback.
 
 `pear-runtime`, Hyperswarm, Hypercore, and Corestore provide relationship-specific peer transport.
 Frames are size-limited and validated before processing. Event IDs, protocol versions, freshness,
-and append-only local history prevent accidental replay and duplicate processing.
+and append-only local history prevent accidental replay and duplicate processing. The Bare worker
+also appends sanitized command/event metadata to a named Corestore Hypercore feed; command payloads,
+wallet secrets, and profile contents are not written to that audit feed. Autobase is intentionally
+out of scope because the feed has one local writer.
 
 ### WDK
 
@@ -65,16 +68,40 @@ These commands were run successfully on 15 July 2026:
 npm install
 npx qvac doctor --json
 npm run check
+npm run test:pear-worker
 npm run test:p2p
 npm run test:keychain
 npm run test:wdk:network
+npm run desktop:package
+npm run qvac:report
 ```
 
 `npm run check` runs formatting, lint, TypeScript checks, all default tests, and production builds.
 The three smoke commands require local UDP sockets, macOS Keychain access, and Sepolia network access
 respectively.
 
-## Run the UI
+## Run the desktop apps
+
+Use two terminals. Each role receives an isolated Electron, application-data, Pear, and Corestore
+root:
+
+```bash
+npm run desktop:player
+npm run desktop:scout
+```
+
+Create the macOS application bundle with:
+
+```bash
+npm run desktop:package
+```
+
+The verified bundle is written under `out/ScoutPass-darwin-arm64/ScoutPass.app`. Electron embeds
+`pear-runtime`; renderer commands pass through the sandboxed preload, Electron main, the Bare worker,
+and the local command handler. Pear CLI 3 removed `pear run`, so the CLI is used for deployment
+metadata/staging (`npm run pear:touch`, then `npm run pear:stage`), not local execution.
+
+## Run the browser UI
 
 ```bash
 npm run dev
@@ -98,8 +125,10 @@ as proof of the complete desktop acceptance flow.
 5. Disable Wi-Fi and all other network connections.
 6. Run `npm run qvac:report` again and preserve the successful output as offline evidence.
 
-No model file is committed. The current workstation did not have the selected model cached during
-the final automated audit, so both report runs remain a manual acceptance item.
+No model file is committed. On 15 July 2026 the selected model was cached at
+`~/.qvac/models/5b8aae816570a09d_Qwen3-0.6B-Q4_0.gguf` (382,156,480 bytes), then generated a
+Zod-valid report with model info `QVAC QWEN3_600M_INST_Q4`. A second run with networking physically
+disabled remains a manual acceptance item.
 
 ## Two-instance Pears proof
 
@@ -113,9 +142,11 @@ It creates independent Player and Scout Hyperswarm transports, connects and reco
 selective profile, returns an acknowledgement, sends a tryout invitation and acceptance, and shares
 the public Player wallet metadata.
 
-A packaged Pear desktop entrypoint and verified two-window CLI command are not present yet. The final
-demo must not claim two desktop instances until that host/preload packaging step is completed and the
-manual checklist passes.
+`npm run test:pear-worker` starts the real Bare worker, sends a validated command and event, closes
+it, then reopens the same Corestore and verifies that both Hypercore audit records persisted. The
+packaged Player and Scout smoke tests also verified `window.scoutpassRuntime` injection and a
+worker-routed `runtime.status.get` response for both isolated roles. The full two-window product flow
+still requires the manual checklist.
 
 ## WDK testnet setup
 
@@ -173,8 +204,8 @@ Read [threat-model.md](docs/threat-model.md), [privacy.md](docs/privacy.md), and
 
 ## Current limitations
 
-- The selected QVAC model has not yet been cached and proven offline on this workstation.
-- The browser UI is not yet packaged with the Electron/preload/Bare worker path described by the ADR.
+- The selected QVAC model is cached and has generated a real report, but network-disabled inference
+  still needs recorded manual evidence.
 - Scout and club identities are not verified.
 - Statistics and coach notes are player-provided.
 - There is no mainnet support, escrow, gas sponsorship, or automatic payment retry.
@@ -183,11 +214,10 @@ Read [threat-model.md](docs/threat-model.md), [privacy.md](docs/privacy.md), and
 
 ## Roadmap
 
-1. Package and verify the Pear desktop host with isolated Player and Scout data roots.
-2. Cache the QVAC model and record offline inference evidence.
-3. Complete one funded Sepolia USD₮ acceptance transaction and receipt check.
-4. Add optional club identity attestations without centralizing player data.
-5. Evaluate Autobase only if a real multi-writer requirement appears.
+1. Record the complete two-window Player/Scout acceptance flow and offline QVAC run.
+2. Complete one funded Sepolia USD₮ acceptance transaction and receipt check.
+3. Add optional club identity attestations without centralizing player data.
+4. Evaluate Autobase only if a real multi-writer requirement appears.
 
 ## Delivery documents
 

@@ -280,6 +280,32 @@ export const runtimeEventSchema = z.discriminatedUnion("type", [
     .object({
       requestId: idSchema,
       occurredAt: isoDateTimeSchema,
+      type: z.literal("report.updated"),
+      payload: z.object({ report: storedScoutReportSchema }).strict()
+    })
+    .strict(),
+  z
+    .object({
+      requestId: idSchema,
+      occurredAt: isoDateTimeSchema,
+      type: z.literal("share.prepared"),
+      payload: z
+        .object({
+          package: sharedPlayerPackageSchema,
+          serializedPayload: nonEmptyTextSchema,
+          payloadBytes: z
+            .number()
+            .int()
+            .positive()
+            .max(64 * 1024)
+        })
+        .strict()
+    })
+    .strict(),
+  z
+    .object({
+      requestId: idSchema,
+      occurredAt: isoDateTimeSchema,
       type: z.literal("share.sent"),
       payload: z.object({ packageId: idSchema }).strict()
     })

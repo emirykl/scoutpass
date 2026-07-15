@@ -10,8 +10,7 @@ import type { PlayerProfile } from "../../domain/models/player-profile.js";
 import type { ScoutReport } from "../../domain/models/scout-report.js";
 import {
   InvalidScoutReportOutputError,
-  normalizeGeneratedReportMetadata,
-  parseScoutReportJson,
+  parseAndNormalizeGeneratedReport,
   SCOUT_REPORT_JSON_SCHEMA
 } from "./scout-report-json.js";
 import { buildScoutReportPrompt } from "./scout-report-prompt.js";
@@ -54,8 +53,8 @@ export class QvacLocalReportGenerator implements LocalReportGenerator {
     for (let attempt = 0; attempt < 2; attempt += 1) {
       const rawText = await this.#runCompletion(modelId, prompt);
       try {
-        return normalizeGeneratedReportMetadata(
-          parseScoutReportJson(rawText),
+        return parseAndNormalizeGeneratedReport(
+          rawText,
           `${this.#modelLabel} (${modelId})`,
           this.#now()
         );
@@ -89,8 +88,14 @@ export class QvacLocalReportGenerator implements LocalReportGenerator {
     this.#status = "loading";
     try {
       const modelId = await loadModel({
-        modelSrc: this.#modelSrc
-      } as Parameters<typeof loadModel>[0]);
+        modelSrc: this.#modelSrc,
+        modelType: "llamacpp-completion",
+        modelConfig: {
+          ctx_size: 8192,
+          predict: 3072
+        },
+        onProgress: () => undefined
+      });
       this.#modelId = modelId;
       this.#status = "ready";
       return modelId;

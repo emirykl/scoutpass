@@ -56,6 +56,9 @@ type PeerConnectionStatus = Extract<
   { readonly type: "connection.status" }
 >["payload"]["status"];
 
+const initialRole: Role =
+  new URLSearchParams(globalThis.location.search).get("role") === "scout" ? "scout" : "player";
+
 const WORKSPACE_STEPS: Record<
   Role,
   ReadonlyArray<{ readonly id: WorkspaceStep; readonly label: string }>
@@ -83,8 +86,10 @@ const WORKSPACE_STEPS: Record<
 };
 
 export function App() {
-  const [role, setRole] = useState<Role>("player");
-  const [activeStep, setActiveStep] = useState<WorkspaceStep>("dashboard");
+  const [role, setRole] = useState<Role>(initialRole);
+  const [activeStep, setActiveStep] = useState<WorkspaceStep>(
+    WORKSPACE_STEPS[initialRole][0]?.id ?? "dashboard"
+  );
   const [player, setPlayer] = useState(demoPlayerProfile);
   const [report, setReport] = useState(() => createLocalPreviewReport(demoPlayerProfile));
   const [receivedPackage, setReceivedPackage] = useState<SharedPlayerPackage>();
@@ -99,6 +104,7 @@ export function App() {
     if (event.type === "invitation.updated") setInvitation(event.payload.invitation);
     if (event.type === "payment.updated") setPayment(event.payload.payment);
     if (event.type === "wallet.updated") setWallet(event.payload.wallet);
+    if (event.type === "report.updated") setReport(event.payload.report.content);
     if (event.type === "connection.status") setConnectionStatus(event.payload.status);
     if (event.type === "workspace.snapshot") {
       const snapshotPlayer = event.payload.profiles.at(-1);
@@ -126,8 +132,28 @@ export function App() {
     setReport(createLocalPreviewReport(demoPlayerProfile));
   }, []);
 
-  const updateReportPreview = useCallback(() => {
-    setReport(createLocalPreviewReport(player));
+  const generateReport = useCallback(async () => {
+    const saved = await requestRuntime({
+      ...createRuntimeRequest(),
+      type: "profile.save",
+      payload: player
+    });
+    if (saved.type === "operation.failed") {
+      throw runtimeFailureError(saved.payload, "The player profile could not be saved.");
+    }
+
+    const generated = await requestRuntime({
+      ...createRuntimeRequest(),
+      type: "report.generate",
+      payload: { playerId: player.id }
+    });
+    if (generated.type === "operation.failed") {
+      throw runtimeFailureError(generated.payload, "The local QVAC report could not be generated.");
+    }
+    if (generated.type !== "report.updated" || generated.payload.report.playerId !== player.id) {
+      throw new Error("Desktop runtime returned an unexpected QVAC report response.");
+    }
+    setReport(generated.payload.report.content);
   }, [player]);
 
   const sendPreparedShare = useCallback(async (prepared: PreparedPlayerShare) => {
@@ -236,7 +262,8 @@ export function App() {
             <ScoutReportPanel
               player={player}
               report={report}
-              onGeneratePreview={updateReportPreview}
+              desktopRuntimeAvailable={desktopRuntimeAvailable}
+              onGenerate={generateReport}
             />
           ) : null}
           {activeStep === "connect" ? (

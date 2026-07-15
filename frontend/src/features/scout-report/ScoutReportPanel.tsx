@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import {
   REPORT_DISCLAIMER,
   type PlayerProfile,
@@ -7,10 +9,33 @@ import {
 interface ScoutReportPanelProps {
   readonly player: PlayerProfile;
   readonly report: ScoutReport;
-  readonly onGeneratePreview: () => void;
+  readonly desktopRuntimeAvailable: boolean;
+  readonly onGenerate: () => Promise<void>;
 }
 
-export function ScoutReportPanel({ player, report, onGeneratePreview }: ScoutReportPanelProps) {
+export function ScoutReportPanel({
+  player,
+  report,
+  desktopRuntimeAvailable,
+  onGenerate
+}: ScoutReportPanelProps) {
+  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState<string>();
+
+  const generate = async () => {
+    setStatus("loading");
+    setErrorMessage(undefined);
+    try {
+      await onGenerate();
+      setStatus("idle");
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "The local QVAC report could not be generated."
+      );
+      setStatus("error");
+    }
+  };
+
   return (
     <section className="panel" aria-labelledby="report-title">
       <div className="section-heading">
@@ -18,10 +43,24 @@ export function ScoutReportPanel({ player, report, onGeneratePreview }: ScoutRep
           <p className="eyebrow">QVAC report</p>
           <h2 id="report-title">Local scouting report</h2>
         </div>
-        <button type="button" className="primary-button" onClick={onGeneratePreview}>
-          Preview QVAC payload
+        <button
+          type="button"
+          className="primary-button"
+          disabled={!desktopRuntimeAvailable || status === "loading"}
+          onClick={() => void generate()}
+        >
+          {status === "loading" ? "Generating locally..." : "Generate with QVAC"}
         </button>
       </div>
+
+      {!desktopRuntimeAvailable ? (
+        <div className="notice">Open the Player desktop app to run the local QVAC model.</div>
+      ) : null}
+      {status === "error" && errorMessage ? (
+        <div className="notice" role="alert">
+          {errorMessage}
+        </div>
+      ) : null}
 
       <div className="notice">{REPORT_DISCLAIMER}</div>
 

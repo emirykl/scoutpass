@@ -89,16 +89,35 @@ export const stripJsonCodeFence = (text: string): string => {
 };
 
 export const parseScoutReportJson = (rawText: string): ScoutReport => {
-  let parsed: unknown;
+  const parsed = parseJson(rawText);
+  return parseReportCandidate(parsed);
+};
+
+export const parseAndNormalizeGeneratedReport = (
+  rawText: string,
+  modelInfo: string,
+  now = new Date()
+): ScoutReport => {
+  const parsed = parseJson(rawText);
+  const candidate =
+    typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)
+      ? { ...parsed, generatedAt: now.toISOString(), modelInfo }
+      : parsed;
+  return normalizeGeneratedReportMetadata(parseReportCandidate(candidate), modelInfo, now);
+};
+
+const parseJson = (rawText: string): unknown => {
   try {
-    parsed = JSON.parse(stripJsonCodeFence(rawText));
+    return JSON.parse(stripJsonCodeFence(rawText));
   } catch (error) {
     throw new InvalidScoutReportOutputError("QVAC returned text that is not valid JSON.", {
       cause: error
     });
   }
+};
 
-  const result = scoutReportContentSchema.safeParse(parsed);
+const parseReportCandidate = (candidate: unknown): ScoutReport => {
+  const result = scoutReportContentSchema.safeParse(candidate);
   if (!result.success) {
     throw new InvalidScoutReportOutputError(z.prettifyError(result.error), {
       cause: result.error

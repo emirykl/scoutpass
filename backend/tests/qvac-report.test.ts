@@ -4,6 +4,7 @@ import { buildScoutReportPrompt } from "../src/infrastructure/qvac/scout-report-
 import {
   InvalidScoutReportOutputError,
   normalizeGeneratedReportMetadata,
+  parseAndNormalizeGeneratedReport,
   parseScoutReportJson,
   stripJsonCodeFence
 } from "../src/infrastructure/qvac/scout-report-json.js";
@@ -42,5 +43,13 @@ describe("QVAC scouting report parsing", () => {
 
     expect(normalized.generatedAt).toBe(NOW.toISOString());
     expect(normalized.modelInfo).toBe("QVAC installed model");
+
+    const generated = parseAndNormalizeGeneratedReport(
+      JSON.stringify({ ...createReport(), generatedAt: "not-a-date", modelInfo: "invented" }),
+      "QVAC QWEN3",
+      NOW
+    );
+    expect(generated.generatedAt).toBe(NOW.toISOString());
+    expect(generated.modelInfo).toBe("QVAC QWEN3");
   });
 });

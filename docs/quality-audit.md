@@ -7,7 +7,7 @@
 ## Automated quality gate
 
 Final `npm run check` passed. It covered Prettier, ESLint with zero warnings, backend/frontend
-TypeScript, 59 passing backend tests, 8 passing frontend tests, and both production builds. Three
+TypeScript, 59 passing default backend tests, 8 passing frontend tests, and both production builds. Four
 opt-in backend smoke cases remained skipped in the default suite and were invoked separately where
 applicable.
 
@@ -16,18 +16,23 @@ applicable.
 | Command                    | Result               | Evidence covered                                                                                                          |
 | -------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | `npm run test:p2p`         | Pass                 | Two local DHT nodes, connect/reconnect, selected profile, acknowledgement, invitation, acceptance, public wallet metadata |
+| `npm run test:pear-worker` | Pass                 | Bare IPC validation and persisted/reopened Corestore Hypercore audit records                                              |
 | `npm run test:keychain`    | Pass                 | Temporary Keychain set/get/delete and stable WDK wallet restoration                                                       |
 | `npm run test:wdk:network` | Pass                 | Real Sepolia RPC test USD₮ balance query through WDK                                                                      |
 | `npx qvac doctor --json`   | Required checks pass | SDK resolution, macOS arm64, Metal, 16 GB total RAM, disk                                                                 |
+| `npm run qvac:report`      | Pass                 | Cached Qwen3 0.6B Q4 generated a Zod-valid local report                                                                   |
+| Packaged role smoke        | Pass                 | Player/Scout preload injection and worker-routed runtime status                                                           |
 
-QVAC doctor reported only about 90 MB available RAM and no selected model cache was found. Real model
-generation/offline proof was therefore not run and remains a manual acceptance item.
+QVAC doctor reported low immediately free RAM, while macOS memory pressure reported 42% free. The
+382,156,480-byte Qwen3 model was cached and generated a valid report. A run with physical network
+connectivity disabled remains a manual acceptance item.
 
 ## Dependency vulnerability audit
 
-`npm audit --json` returned zero info, low, moderate, high, or critical vulnerabilities across its
-649-package dependency graph view. `npm install --package-lock-only --ignore-scripts` also reported
-zero vulnerabilities after package metadata was updated.
+After Electron packaging dependencies were added, the registry identified vulnerable transitive
+`tar` and `tmp` versions under Electron Forge/QVAC build tooling. Root lockfile overrides pin
+`tar@7.5.16` and `tmp@0.2.7`; packaging and smoke tests passed after the override. The final
+`npm install` and `npm audit --json` returned zero vulnerabilities across 1,077 installed packages.
 
 This is a point-in-time registry result, not a guarantee against future advisories or package supply
 chain compromise.
@@ -106,8 +111,8 @@ were present. DoraHacks and YouTube URLs were not found and remain user submissi
 
 ## Residual manual gates
 
-1. Cache the QVAC model, generate a valid report, disable networking, and generate again.
-2. Package/install the Pear desktop host and run two clean visible role instances.
+1. Disable networking and preserve a second successful QVAC report as offline evidence.
+2. Run the packaged desktop host through the complete two-window product workflow.
 3. Fund the Scout demo wallet with Sepolia ETH and test USD₮.
 4. Complete one explicitly approved transaction and confirm the hash from both roles.
 5. Capture screenshots and a maximum three-minute unlisted demo.
