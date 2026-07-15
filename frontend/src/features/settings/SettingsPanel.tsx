@@ -6,6 +6,7 @@ import {
   isDesktopRuntimeAvailable,
   requestRuntime
 } from "../../runtime/runtime-bridge.js";
+import { runtimeFailureError, toUserFacingMessage } from "../../runtime/user-facing-errors.js";
 
 interface SettingsPanelProps {
   readonly snapshot: RuntimeSnapshot;
@@ -33,7 +34,9 @@ export function SettingsPanel({ snapshot, connectionStatus }: SettingsPanelProps
         ...createRuntimeRequest(),
         type: "settings.data.preview"
       });
-      if (event.type === "operation.failed") throw new Error(event.payload.message);
+      if (event.type === "operation.failed") {
+        throw runtimeFailureError(event.payload, "The local data scope could not be read.");
+      }
       if (event.type !== "settings.data.previewed") throw new Error("Data scope is unavailable.");
       setCounts(event.payload.counts);
       setCleared(false);
@@ -54,7 +57,9 @@ export function SettingsPanel({ snapshot, connectionStatus }: SettingsPanelProps
         type: "settings.data.clear",
         payload: { userConfirmed: true }
       });
-      if (event.type === "operation.failed") throw new Error(event.payload.message);
+      if (event.type === "operation.failed") {
+        throw runtimeFailureError(event.payload, "Local app data could not be cleared.");
+      }
       if (event.type !== "settings.data.previewed" || !event.payload.cleared) {
         throw new Error("Local data was not cleared.");
       }
@@ -76,7 +81,12 @@ export function SettingsPanel({ snapshot, connectionStatus }: SettingsPanelProps
         ...createRuntimeRequest(),
         type: "settings.debug.export"
       });
-      if (event.type === "operation.failed") throw new Error(event.payload.message);
+      if (event.type === "operation.failed") {
+        throw runtimeFailureError(
+          event.payload,
+          "The sanitized debug export could not be created."
+        );
+      }
       if (event.type !== "settings.debug.exported") throw new Error("Debug export is unavailable.");
       downloadDebugExport(event.payload.content);
     } catch (caught) {
@@ -183,4 +193,4 @@ const downloadDebugExport = (content: string) => {
 };
 
 const toMessage = (error: unknown): string =>
-  error instanceof Error ? error.message : "The settings operation failed.";
+  toUserFacingMessage(error, "The settings operation failed.");

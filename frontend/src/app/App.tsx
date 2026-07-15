@@ -33,6 +33,7 @@ import {
   requestRuntime,
   subscribeRuntimeEvents
 } from "../runtime/runtime-bridge.js";
+import { runtimeFailureError } from "../runtime/user-facing-errors.js";
 
 const runtime = getRuntimeInfo();
 const RELATIONSHIP_ID = "relationship_demo_001";
@@ -142,7 +143,7 @@ export function App() {
       }
     });
     if (event.type === "operation.failed") {
-      throw new Error(event.payload.message);
+      throw runtimeFailureError(event.payload, "The selected profile could not be shared.");
     }
     if (event.type !== "share.sent" || event.payload.packageId !== prepared.package.packageId) {
       throw new Error("Desktop runtime did not confirm the selected package.");
@@ -208,6 +209,10 @@ export function App() {
         <div className={`connection-strip status-${connectionStatus}`} role="status">
           <span className={connectionStatus === "connected" ? "status-dot ready" : "status-dot"} />
           Pears connection: {connectionStatus.replaceAll("_", " ")}
+        </div>
+        <div className="identity-warning" role="note">
+          Scout and club identity is not verified in this MVP. Confirm invitation details through an
+          independent channel before travel.
         </div>
 
         <div className="workspace-panel">

@@ -13,6 +13,7 @@ import {
   requestRuntime,
   subscribeRuntimeEvents
 } from "../../runtime/runtime-bridge.js";
+import { runtimeFailureError, toUserFacingMessage } from "../../runtime/user-facing-errors.js";
 
 interface TryoutPanelProps {
   readonly role: "player" | "scout";
@@ -164,7 +165,9 @@ function ScoutTryoutComposer({
         type: "invitation.send",
         payload: preview
       });
-      if (event.type === "operation.failed") throw new Error(event.payload.message);
+      if (event.type === "operation.failed") {
+        throw runtimeFailureError(event.payload, "The invitation could not be sent.");
+      }
       if (event.type !== "invitation.updated") {
         throw new Error("Desktop runtime did not confirm the invitation.");
       }
@@ -276,7 +279,9 @@ function PlayerInvitation({
           ...(message.trim() === "" ? {} : { message })
         }
       });
-      if (event.type === "operation.failed") throw new Error(event.payload.message);
+      if (event.type === "operation.failed") {
+        throw runtimeFailureError(event.payload, "The invitation response could not be sent.");
+      }
       if (event.type !== "invitation.updated") {
         throw new Error("Desktop runtime did not confirm the invitation response.");
       }
@@ -371,4 +376,4 @@ const DATE_FIELDS = new Set(["startsAt", "endsAt", "expiresAt"]);
 const WIDE_FIELDS = new Set(["instructions", "contactDetails"]);
 const formatDate = (value: string): string => new Date(value).toLocaleString();
 const toMessage = (error: unknown): string =>
-  error instanceof Error ? error.message : "The invitation operation failed.";
+  toUserFacingMessage(error, "The invitation operation failed.");

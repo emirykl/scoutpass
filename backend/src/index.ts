@@ -1,6 +1,7 @@
 export * from "./application/ports/integrations.js";
 export * from "./application/ports/repositories.js";
 export * from "./application/connections/scouting-connection-service.js";
+export * from "./application/errors/user-facing-error.js";
 export * from "./application/invitations/tryout-invitation-service.js";
 export * from "./application/share/create-shared-package.js";
 export * from "./application/share/prepare-player-share.js";

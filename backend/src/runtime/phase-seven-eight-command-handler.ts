@@ -7,7 +7,7 @@ import { workspaceSnapshotSchema } from "../contracts/runtime-messages.js";
 import type { PaymentReference } from "../domain/models/wallet.js";
 import type { ScoutPassRepositories } from "../application/ports/repositories.js";
 import type { LocalDataCounts } from "../application/settings/local-data-maintenance-service.js";
-import { TravelSupportPaymentError } from "../application/wallet/travel-support-payment-service.js";
+import { mapErrorToUserFacingFailure } from "../application/errors/user-facing-error.js";
 
 interface PaymentOperations {
   review(invitationId: string): Promise<PaymentReference>;
@@ -98,15 +98,15 @@ export class PhaseSevenEightCommandHandler {
           return undefined;
       }
     } catch (error) {
+      const failure = mapErrorToUserFacingFailure(error);
       return {
         requestId: command.requestId,
         occurredAt: this.#now().toISOString(),
         type: "operation.failed",
         payload: {
-          code: error instanceof TravelSupportPaymentError ? error.code : "local_operation_failed",
-          message: error instanceof Error ? error.message : "The local operation failed.",
-          retryable:
-            error instanceof TravelSupportPaymentError && error.code === "wallet_operation_failed"
+          code: failure.code,
+          message: failure.message,
+          retryable: failure.retryable
         }
       };
     }

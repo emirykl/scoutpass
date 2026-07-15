@@ -358,6 +358,15 @@ button:disabled {
   background: var(--green-950);
 }
 
+.identity-warning {
+  border-bottom: 1px solid #dfc66e;
+  padding: 0.65rem 0;
+  color: #654b00;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
 .panel {
   border: 1px solid var(--green-150);
   border-radius: 0.5rem;

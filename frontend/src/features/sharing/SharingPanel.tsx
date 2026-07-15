@@ -12,6 +12,7 @@ import {
   preparePlayerShare,
   type PreparedPlayerShare
 } from "@scoutpass/backend/sharing";
+import { toUserFacingMessage } from "../../runtime/user-facing-errors.js";
 
 interface SharingPanelProps {
   readonly player: PlayerProfile;
@@ -182,4 +183,4 @@ export function ReceivedPackagePanel({
 
 const formatBytes = (bytes: number): string => `${(bytes / 1024).toFixed(1)} KB`;
 const toMessage = (error: unknown): string =>
-  error instanceof Error ? error.message : "The profile package could not be shared.";
+  toUserFacingMessage(error, "The profile package could not be shared.");

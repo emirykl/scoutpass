@@ -8,6 +8,7 @@ import {
   requestRuntime,
   subscribeRuntimeEvents
 } from "../../runtime/runtime-bridge.js";
+import { runtimeFailureError, toUserFacingMessage } from "../../runtime/user-facing-errors.js";
 
 interface PaymentPanelProps {
   readonly role: "player" | "scout";
@@ -44,7 +45,9 @@ export function PaymentPanel({ role, invitation, payment, onPaymentChange }: Pay
     setError(undefined);
     try {
       const event = await requestRuntime({ ...createRuntimeRequest(), ...command });
-      if (event.type === "operation.failed") throw new Error(event.payload.message);
+      if (event.type === "operation.failed") {
+        throw runtimeFailureError(event.payload, "The testnet payment operation failed.");
+      }
       if (event.type !== "payment.updated") {
         throw new Error("Desktop runtime did not return a payment update.");
       }
@@ -270,4 +273,4 @@ const formatWei = (fee: string): string => {
 };
 
 const toMessage = (error: unknown): string =>
-  error instanceof Error ? error.message : "The testnet payment operation failed.";
+  toUserFacingMessage(error, "The testnet payment operation failed.");

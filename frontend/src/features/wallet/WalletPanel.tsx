@@ -8,6 +8,7 @@ import {
   requestRuntime,
   subscribeRuntimeEvents
 } from "../../runtime/runtime-bridge.js";
+import { runtimeFailureError, toUserFacingMessage } from "../../runtime/user-facing-errors.js";
 
 interface WalletPanelProps {
   readonly role: "player" | "scout";
@@ -50,7 +51,9 @@ export function WalletPanel({ role, relationshipId, onWalletChange }: WalletPane
         type: "wallet.initialize",
         payload: { ownerRole: role }
       });
-      if (event.type === "operation.failed") throw new Error(event.payload.message);
+      if (event.type === "operation.failed") {
+        throw runtimeFailureError(event.payload, "The testnet wallet could not be initialized.");
+      }
       if (event.type !== "wallet.updated") {
         throw new Error("Desktop runtime did not return wallet metadata.");
       }
@@ -73,7 +76,9 @@ export function WalletPanel({ role, relationshipId, onWalletChange }: WalletPane
         type: "wallet.balance.get",
         payload: { address: wallet.address }
       });
-      if (event.type === "operation.failed") throw new Error(event.payload.message);
+      if (event.type === "operation.failed") {
+        throw runtimeFailureError(event.payload, "The test USD₮ balance could not be refreshed.");
+      }
       if (event.type !== "wallet.updated") {
         throw new Error("Desktop runtime did not return the test balance.");
       }
@@ -92,7 +97,9 @@ export function WalletPanel({ role, relationshipId, onWalletChange }: WalletPane
         type: "wallet.address.share",
         payload: { relationshipId, wallet, playerApproved: true }
       });
-      if (event.type === "operation.failed") throw new Error(event.payload.message);
+      if (event.type === "operation.failed") {
+        throw runtimeFailureError(event.payload, "The public receive address could not be shared.");
+      }
       setAddressShared(true);
     } catch (caught) {
       setError(toMessage(caught));
@@ -171,4 +178,4 @@ export function WalletPanel({ role, relationshipId, onWalletChange }: WalletPane
 }
 
 const toMessage = (error: unknown): string =>
-  error instanceof Error ? error.message : "The self-custodial wallet operation failed.";
+  toUserFacingMessage(error, "The self-custodial wallet operation failed.");

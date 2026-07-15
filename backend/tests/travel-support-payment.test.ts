@@ -63,6 +63,7 @@ class FakeConnectionService {
 
 class FakeWalletGateway implements WalletGateway {
   public sendCount = 0;
+  public sendError: Error | undefined;
   public initialize(): Promise<WalletPublicMetadata> {
     throw new Error("not needed");
   }
@@ -74,6 +75,7 @@ class FakeWalletGateway implements WalletGateway {
   }
   public confirmAndSend(proposal: PaymentProposal): Promise<PaymentReference> {
     this.sendCount += 1;
+    if (this.sendError !== undefined) return Promise.reject(this.sendError);
     return Promise.resolve({
       ...proposal,
       status: "pending",
@@ -125,7 +127,7 @@ const setup = async () => {
     senderPublicKey: "b".repeat(64),
     now: () => NOW
   });
-  return { connection, gateway, invitation, service };
+  return { connection, gateway, invitation, payments, service };
 };
 
 describe("travel support payment", () => {
@@ -175,5 +177,31 @@ describe("travel support payment", () => {
       status: "confirmed",
       transactionId: pending.transactionId
     });
+  });
+
+  it("rejects an unsigned proposal without calling the wallet gateway", async () => {
+    const { gateway, invitation, service } = await setup();
+    const proposal = await service.review(invitation.id);
+
+    await expect(service.reject(proposal.id)).resolves.toMatchObject({ status: "rejected" });
+    expect(gateway.sendCount).toBe(0);
+    await expect(service.confirmAndSend(proposal.id, true)).rejects.toMatchObject({
+      code: "invalid_payment_state"
+    });
+  });
+
+  it("stores insufficient balance as failed without fabricating a transaction hash", async () => {
+    const { gateway, invitation, payments, service } = await setup();
+    gateway.sendError = new Error("insufficient funds for gas");
+    const proposal = await service.review(invitation.id);
+
+    await expect(service.confirmAndSend(proposal.id, true)).rejects.toMatchObject({
+      code: "wallet_operation_failed"
+    });
+    expect(await payments.get(proposal.id)).toMatchObject({
+      status: "failed",
+      failureReason: "Insufficient test USD₮ or Sepolia ETH balance for this transaction."
+    });
+    expect((await payments.get(proposal.id))?.transactionId).toBeUndefined();
   });
 });

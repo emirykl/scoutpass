@@ -2,6 +2,7 @@
   "name": "@scoutpass/backend",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "exports": {
     ".": {
@@ -32,6 +33,7 @@
     "test:keychain": "SCOUTPASS_KEYCHAIN_SMOKE=1 vitest run tests/wdk-wallet.test.ts",
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "qvac:report": "node dist/runtime/qvac-report-cli.js",
     "wallet:show": "node dist/runtime/wallet-cli.js"
   },
   "dependencies": {

@@ -17,6 +17,7 @@ describe("role-focused ScoutPass workspace", () => {
     render(<App />);
 
     expect(screen.getByRole("heading", { name: "Welcome, Emir Yenikale" })).toBeInTheDocument();
+    expect(screen.getByRole("note")).toHaveTextContent("Scout and club identity is not verified");
     expect(screen.queryByRole("heading", { name: "Profile editor" })).not.toBeInTheDocument();
 
     const playerSteps = screen.getByRole("navigation", { name: "player steps" });

@@ -9,6 +9,7 @@ import {
   requestRuntime,
   subscribeRuntimeEvents
 } from "../../runtime/runtime-bridge.js";
+import { runtimeFailureError, toUserFacingMessage } from "../../runtime/user-facing-errors.js";
 
 interface ConnectionPanelProps {
   readonly snapshot: RuntimeSnapshot;
@@ -76,7 +77,7 @@ export function ConnectionPanel({
         payload: { inviteCode }
       });
       if (event.type === "operation.failed") {
-        throw new Error(event.payload.message);
+        throw runtimeFailureError(event.payload, "The scouting connection could not be opened.");
       }
     } catch (caught) {
       setConnectionStatus("error");
@@ -93,7 +94,7 @@ export function ConnectionPanel({
         payload: { relationshipId }
       });
       if (event.type === "operation.failed") {
-        throw new Error(event.payload.message);
+        throw runtimeFailureError(event.payload, "The test event could not be sent.");
       }
       setTestEventStatus("sent");
     } catch (caught) {
@@ -170,4 +171,4 @@ function Status({ label, value }: { readonly label: string; readonly value: stri
 }
 
 const toMessage = (error: unknown): string =>
-  error instanceof Error ? error.message : "The local runtime operation failed.";
+  toUserFacingMessage(error, "The local runtime operation failed.");

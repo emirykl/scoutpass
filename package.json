@@ -2,6 +2,7 @@
   "name": "scoutpass",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "workspaces": [
     "backend",
@@ -23,6 +24,7 @@
     "test:p2p": "npm run test:p2p --workspace backend",
     "test:wdk:network": "npm run test:wdk:network --workspace backend",
     "typecheck": "npm run typecheck --workspace backend && npm run typecheck --workspace frontend",
+    "qvac:report": "npm run build --workspace backend && npm run qvac:report --workspace backend",
     "wallet:player": "npm run build --workspace backend && npm run wallet:show --workspace backend -- player",
     "wallet:scout": "npm run build --workspace backend && npm run wallet:show --workspace backend -- scout"
   },
