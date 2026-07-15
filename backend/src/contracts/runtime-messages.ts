@@ -21,6 +21,11 @@ const requestFields = {
   sentAt: isoDateTimeSchema
 };
 
+const serializedSharePayloadSchema = z
+  .string()
+  .min(2)
+  .max(62 * 1024);
+
 export const localDataCountsSchema = z
   .object({
     profiles: z.number().int().nonnegative(),
@@ -90,7 +95,7 @@ export const runtimeCommandSchema = z.discriminatedUnion("type", [
         .object({
           relationshipId: idSchema,
           package: sharedPlayerPackageSchema,
-          serializedPayload: nonEmptyTextSchema,
+          serializedPayload: serializedSharePayloadSchema,
           payloadBytes: z
             .number()
             .int()
@@ -292,7 +297,7 @@ export const runtimeEventSchema = z.discriminatedUnion("type", [
       payload: z
         .object({
           package: sharedPlayerPackageSchema,
-          serializedPayload: nonEmptyTextSchema,
+          serializedPayload: serializedSharePayloadSchema,
           payloadBytes: z
             .number()
             .int()

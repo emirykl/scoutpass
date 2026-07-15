@@ -29,6 +29,7 @@ describe("role-focused ScoutPass workspace", () => {
     fireEvent.click(within(playerSteps).getByRole("button", { name: /AI report/ }));
 
     expect(screen.getByRole("heading", { name: "Your scouting report" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Player summary" })).not.toBeInTheDocument();
     expect(
       screen.queryByRole("heading", { name: "Tell your football story" })
     ).not.toBeInTheDocument();

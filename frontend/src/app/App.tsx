@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import type {
   PaymentReference,
   RuntimeEvent,
+  ScoutReport,
   SharedPlayerPackage,
   TryoutInvitation,
   WalletPublicMetadata
@@ -18,7 +19,7 @@ import { TryoutPanel } from "../features/invitations/TryoutPanel.js";
 import { WalletPanel } from "../features/wallet/WalletPanel.js";
 import { PaymentPanel } from "../features/wallet/PaymentPanel.js";
 import { SettingsPanel } from "../features/settings/SettingsPanel.js";
-import { createLocalPreviewReport, demoPlayerProfile } from "../runtime/local-runtime.js";
+import { demoPlayerProfile } from "../runtime/local-runtime.js";
 import {
   createRuntimeRequest,
   isDesktopRuntimeAvailable,
@@ -77,7 +78,7 @@ export function App() {
     WORKSPACE_STEPS[initialRole][0]?.id ?? "profile"
   );
   const [player, setPlayer] = useState(demoPlayerProfile);
-  const [report, setReport] = useState(() => createLocalPreviewReport(demoPlayerProfile));
+  const [report, setReport] = useState<ScoutReport>();
   const [receivedPackage, setReceivedPackage] = useState<SharedPlayerPackage>();
   const [invitation, setInvitation] = useState<TryoutInvitation>();
   const [payment, setPayment] = useState<PaymentReference>();
@@ -94,9 +95,7 @@ export function App() {
     if (event.type === "connection.status") setConnectionStatus(event.payload.status);
     if (event.type === "workspace.snapshot") {
       const snapshotPlayer = event.payload.profiles.at(-1);
-      const snapshotReport = event.payload.reports.at(-1);
       if (snapshotPlayer) setPlayer(snapshotPlayer);
-      if (snapshotReport) setReport(snapshotReport.content);
       setReceivedPackage(event.payload.receivedPackages.at(-1));
       setInvitation(event.payload.invitations.at(-1));
       setPayment(event.payload.payments.at(-1));
@@ -157,6 +156,7 @@ export function App() {
   }, []);
 
   const changeRole = (nextRole: Role) => {
+    if (desktopRuntimeAvailable) return;
     setRole(nextRole);
     setPrivacyOpen(false);
     setActiveStep(WORKSPACE_STEPS[nextRole][0]?.id ?? "profile");
@@ -177,22 +177,26 @@ export function App() {
         <a className="brand" href="#workspace" aria-label="ScoutPass home">
           ScoutPass
         </a>
-        <div className="role-switch" aria-label="Choose role">
-          <button
-            type="button"
-            className={role === "player" ? "active" : ""}
-            onClick={() => changeRole("player")}
-          >
-            Player
-          </button>
-          <button
-            type="button"
-            className={role === "scout" ? "active" : ""}
-            onClick={() => changeRole("scout")}
-          >
-            Scout
-          </button>
-        </div>
+        {desktopRuntimeAvailable ? (
+          <div className="desktop-role">{role === "player" ? "Player app" : "Scout app"}</div>
+        ) : (
+          <div className="role-switch" aria-label="Choose role">
+            <button
+              type="button"
+              className={role === "player" ? "active" : ""}
+              onClick={() => changeRole("player")}
+            >
+              Player
+            </button>
+            <button
+              type="button"
+              className={role === "scout" ? "active" : ""}
+              onClick={() => changeRole("scout")}
+            >
+              Scout
+            </button>
+          </div>
+        )}
         <div className="header-status">Testnet environment</div>
       </header>
 
@@ -266,7 +270,17 @@ export function App() {
             />
           ) : null}
           {!privacyOpen && role === "player" && activeStep === "share" ? (
-            <SharingPanel player={player} report={report} onSend={sendPreparedShare} />
+            report === undefined ? (
+              <section className="panel compact-panel">
+                <p className="eyebrow">Report required</p>
+                <h2>Generate your AI report first</h2>
+                <p className="summary">
+                  Return to AI report, generate it on this device, then choose what to share.
+                </p>
+              </section>
+            ) : (
+              <SharingPanel player={player} report={report} onSend={sendPreparedShare} />
+            )
           ) : null}
           {!privacyOpen && role === "scout" && activeStep === "player" ? (
             <ReceivedPackagePanel playerPackage={receivedPackage} />

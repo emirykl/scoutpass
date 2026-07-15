@@ -49,13 +49,18 @@ describe("renderer to local runtime contracts", () => {
   });
 
   it("validates approved share commands and received package events", () => {
+    const report = {
+      ...createReport(),
+      playerSummary: "A".repeat(2_000)
+    };
     const prepared = preparePlayerShare({
       player: createPlayer(),
-      report: createReport(),
+      report,
       selection: DEFAULT_SHARE_SELECTION,
       playerPublicKey: PUBLIC_KEY,
       now: NOW
     });
+    expect(prepared.serializedPayload.length).toBeGreaterThan(2_000);
     expect(
       runtimeCommandSchema.safeParse({
         requestId: "request_share_001",

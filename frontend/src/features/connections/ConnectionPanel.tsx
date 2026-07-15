@@ -24,6 +24,7 @@ type PeerConnectionStatus = Extract<
 export function ConnectionPanel({ role, relationshipId, onStatusChange }: ConnectionPanelProps) {
   const [inviteCode, setInviteCode] = useState("");
   const [, setConnectionStatus] = useState<PeerConnectionStatus>("idle");
+  const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string>();
   const runtimeAvailable = isDesktopRuntimeAvailable();
 
@@ -50,6 +51,7 @@ export function ConnectionPanel({ role, relationshipId, onStatusChange }: Connec
         throw new Error("Desktop runtime returned an unexpected invite response.");
       }
       setInviteCode(event.payload.inviteCode);
+      setCopied(false);
       setConnectionStatus("invite_ready");
       onStatusChange?.("invite_ready");
     } catch (caught) {
@@ -66,11 +68,16 @@ export function ConnectionPanel({ role, relationshipId, onStatusChange }: Connec
       const event = await requestRuntime({
         ...createRuntimeRequest(),
         type: "connection.connect",
-        payload: { inviteCode }
+        payload: { inviteCode: inviteCode.trim() }
       });
       if (event.type === "operation.failed") {
         throw runtimeFailureError(event.payload, "The scouting connection could not be opened.");
       }
+      if (event.type !== "connection.status" || event.payload.status !== "connected") {
+        throw new Error("The desktop app did not confirm the connection.");
+      }
+      setConnectionStatus("connected");
+      onStatusChange?.("connected");
     } catch (caught) {
       setConnectionStatus("error");
       setError(toMessage(caught));
@@ -113,6 +120,17 @@ export function ConnectionPanel({ role, relationshipId, onStatusChange }: Connec
             readOnly={role === "scout"}
           />
         </label>
+        {role === "scout" && inviteCode ? (
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={() => {
+              void navigator.clipboard.writeText(inviteCode).then(() => setCopied(true));
+            }}
+          >
+            {copied ? "Code copied" : "Copy code"}
+          </button>
+        ) : null}
         {role === "player" ? (
           <button
             type="button"

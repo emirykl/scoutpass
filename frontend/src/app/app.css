@@ -140,6 +140,17 @@ a:focus-visible {
   background: var(--butter-300);
 }
 
+.desktop-role {
+  min-width: 8rem;
+  border: 1px solid rgb(255 239 179 / 35%);
+  border-radius: 0.4rem;
+  padding: 0.65rem 1rem;
+  color: var(--butter-300);
+  font-size: 0.78rem;
+  font-weight: 750;
+  text-align: center;
+}
+
 .role-intro {
   position: relative;
   min-height: 15rem;
