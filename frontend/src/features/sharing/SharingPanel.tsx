@@ -8,7 +8,6 @@ import type {
 } from "@scoutpass/backend/contracts";
 import {
   DEFAULT_SHARE_SELECTION,
-  MAX_SHARED_PACKAGE_BYTES,
   preparePlayerShare,
   type PreparedPlayerShare
 } from "@scoutpass/backend/sharing";
@@ -120,18 +119,17 @@ export function SharingPanel({ player, report, onSend }: SharingPanelProps) {
 
       {prepared ? (
         <div className="share-preview">
-          <div className="size-line">
-            <strong>{formatBytes(prepared.payloadBytes)}</strong>
-            <span>Limit {formatBytes(MAX_SHARED_PACKAGE_BYTES)}</span>
+          <div data-testid="share-json-preview">
+            <h3>The scout will receive</h3>
+            <SharedDataView playerPackage={prepared.package} />
           </div>
-          <pre data-testid="share-json-preview">{JSON.stringify(prepared.package, null, 2)}</pre>
           <label className="approval-row">
             <input
               type="checkbox"
               checked={approved}
               onChange={(event) => setApproved(event.target.checked)}
             />
-            I approve sharing exactly the package shown above with this scout.
+            I approve sharing exactly the information shown above with this scout.
           </label>
           <button
             type="button"
@@ -142,7 +140,7 @@ export function SharingPanel({ player, report, onSend }: SharingPanelProps) {
             {status === "sending" ? "Sending" : "Send to scout"}
           </button>
           {status === "sent" ? (
-            <p className="success">Package sent to the Pears connection.</p>
+            <p className="success">Profile shared with the connected scout.</p>
           ) : null}
         </div>
       ) : null}
@@ -158,29 +156,79 @@ export function ReceivedPackagePanel({
 }) {
   return (
     <section className="panel" aria-labelledby="received-profile-title">
-      <p className="eyebrow">Received via Pears</p>
-      <h2 id="received-profile-title">Shared player package</h2>
+      <p className="eyebrow">Player-approved information</p>
+      <h2 id="received-profile-title">Player profile</h2>
       {playerPackage === undefined ? (
-        <p className="summary">No player package has been received for this relationship.</p>
+        <p className="summary">Waiting for the player to choose and share their information.</p>
       ) : (
-        <>
-          <div className="report-grid">
-            <article>
-              <h3>Profile</h3>
-              <p>{Object.keys(playerPackage.selectedProfileFields).join(", ") || "None"}</p>
-            </article>
-            <article>
-              <h3>Report</h3>
-              <p>{Object.keys(playerPackage.selectedReportSections).join(", ") || "None"}</p>
-            </article>
-          </div>
-          <pre>{JSON.stringify(playerPackage, null, 2)}</pre>
-        </>
+        <SharedDataView playerPackage={playerPackage} />
       )}
     </section>
   );
 }
 
-const formatBytes = (bytes: number): string => `${(bytes / 1024).toFixed(1)} KB`;
+function SharedDataView({ playerPackage }: { readonly playerPackage: SharedPlayerPackage }) {
+  const sections = [
+    ...Object.entries(playerPackage.selectedProfileFields),
+    ...Object.entries(playerPackage.selectedReportSections)
+  ];
+
+  if (sections.length === 0) {
+    return <p className="summary">No information selected.</p>;
+  }
+
+  return (
+    <div className="shared-data-preview">
+      {sections.map(([label, value]) => (
+        <section className="shared-section" key={label}>
+          <h4>{humanize(label)}</h4>
+          <ReadableValue value={value} />
+        </section>
+      ))}
+    </div>
+  );
+}
+
+function ReadableValue({ value }: { readonly value: unknown }) {
+  if (value === null || value === undefined) return <span>Not provided</span>;
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return <span>{String(value)}</span>;
+  }
+  if (Array.isArray(value)) {
+    const items: readonly unknown[] = value;
+    return (
+      <ul className="shared-value-list">
+        {items.map((item, index) => (
+          <li key={index}>
+            <ReadableValue value={item} />
+          </li>
+        ))}
+      </ul>
+    );
+  }
+  if (typeof value === "object") {
+    const fields = Object.entries(value as Record<string, unknown>);
+    return (
+      <dl className="shared-fields">
+        {fields.map(([label, nestedValue]) => (
+          <div key={label}>
+            <dt>{humanize(label)}</dt>
+            <dd>
+              <ReadableValue value={nestedValue} />
+            </dd>
+          </div>
+        ))}
+      </dl>
+    );
+  }
+  return <span>Not provided</span>;
+}
+
+const humanize = (value: string): string =>
+  value
+    .replaceAll(/([A-Z])/g, " $1")
+    .replaceAll("_", " ")
+    .replace(/^./, (character) => character.toUpperCase());
+
 const toMessage = (error: unknown): string =>
   toUserFacingMessage(error, "The profile package could not be shared.");

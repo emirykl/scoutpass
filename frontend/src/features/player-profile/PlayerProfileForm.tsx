@@ -11,10 +11,9 @@ import {
 interface PlayerProfileFormProps {
   readonly value: PlayerProfile;
   readonly onChange: (profile: PlayerProfile) => void;
-  readonly onLoadDemo: () => void;
 }
 
-export function PlayerProfileForm({ value, onChange, onLoadDemo }: PlayerProfileFormProps) {
+export function PlayerProfileForm({ value, onChange }: PlayerProfileFormProps) {
   const [draftSavedAt, setDraftSavedAt] = useState<string | undefined>();
   const { register, reset, setValue, getValues, control } = useForm<PlayerProfile>({
     defaultValues: value,
@@ -53,16 +52,14 @@ export function PlayerProfileForm({ value, onChange, onLoadDemo }: PlayerProfile
   };
 
   return (
-    <section className="panel" aria-labelledby="profile-title">
-      <div className="section-heading">
+    <section className="profile-editor" aria-labelledby="profile-title">
+      <div className="profile-header">
         <div>
-          <p className="eyebrow">Player workspace</p>
-          <h2 id="profile-title">Profile editor</h2>
+          <p className="eyebrow">Player profile</p>
+          <h2 id="profile-title">Tell your football story</h2>
+          <p className="summary">Your profile stays on this device until you choose to share it.</p>
         </div>
         <div className="section-actions">
-          <button type="button" className="secondary-button" onClick={onLoadDemo}>
-            Load demo
-          </button>
           <button type="button" className="primary-button" onClick={saveDraft}>
             Save draft
           </button>
@@ -75,177 +72,381 @@ export function PlayerProfileForm({ value, onChange, onLoadDemo }: PlayerProfile
       <p className="muted">{completion}% profile completion · self-entered data, not verified</p>
       {draftSavedAt ? <p className="muted">Draft saved locally at {draftSavedAt}</p> : null}
 
-      <form className="form-grid">
-        <label>
-          Full name
-          <input {...register("football.fullName")} />
-        </label>
-        <label>
-          Age
-          <input type="number" {...register("football.age", { valueAsNumber: true })} />
-        </label>
-        <label>
-          Country
-          <input {...register("football.country")} />
-        </label>
-        <label>
-          City
-          <input {...register("football.city")} />
-        </label>
-        <label>
-          Current team
-          <input {...register("football.currentTeam")} />
-        </label>
-        <label>
-          Primary position
-          <input {...register("football.primaryPosition")} />
-        </label>
-        <label>
-          Position group
-          <select {...register("football.positionGroup")}>
-            <option value="goalkeeper">Goalkeeper</option>
-            <option value="defender">Defender</option>
-            <option value="midfielder">Midfielder</option>
-            <option value="forward">Forward</option>
-          </select>
-        </label>
-        <label>
-          Dominant foot
-          <select {...register("football.dominantFoot")}>
-            <option value="right">Right</option>
-            <option value="left">Left</option>
-            <option value="both">Both</option>
-          </select>
-        </label>
-        <label>
-          Matches
-          <input
-            type="number"
-            {...register("performance.common.matchesPlayed", { valueAsNumber: true })}
-          />
-        </label>
-        <label>
-          Minutes
-          <input
-            type="number"
-            {...register("performance.common.minutesPlayed", { valueAsNumber: true })}
-          />
-        </label>
-        <label>
-          Goals
-          <input type="number" {...register("performance.common.goals", { valueAsNumber: true })} />
-        </label>
-        <label>
-          Assists
-          <input
-            type="number"
-            {...register("performance.common.assists", { valueAsNumber: true })}
-          />
-        </label>
+      <form className="profile-form">
+        <fieldset>
+          <legend>
+            <span>01</span> Player identity
+          </legend>
+          <div className="form-grid">
+            <label>
+              Full name
+              <input {...register("football.fullName")} />
+            </label>
+            <label>
+              Age
+              <input type="number" {...register("football.age", { valueAsNumber: true })} />
+            </label>
+            <label>
+              Country
+              <input {...register("football.country")} />
+            </label>
+            <label>
+              City
+              <input {...register("football.city")} />
+            </label>
+            <label>
+              Current team
+              <input {...register("football.currentTeam")} />
+            </label>
+            <label>
+              Height (cm)
+              <input type="number" {...register("football.heightCm", { valueAsNumber: true })} />
+            </label>
+            <label>
+              Primary position
+              <input {...register("football.primaryPosition")} />
+            </label>
+            <label>
+              Secondary position
+              <input {...register("football.secondaryPosition")} />
+            </label>
+            <label>
+              Position group
+              <select {...register("football.positionGroup")}>
+                <option value="goalkeeper">Goalkeeper</option>
+                <option value="defender">Defender</option>
+                <option value="midfielder">Midfielder</option>
+                <option value="forward">Forward</option>
+              </select>
+            </label>
+            <label>
+              Dominant foot
+              <select {...register("football.dominantFoot")}>
+                <option value="right">Right</option>
+                <option value="left">Left</option>
+                <option value="both">Both</option>
+              </select>
+            </label>
+          </div>
+        </fieldset>
 
-        {positionGroup === "goalkeeper" ? (
-          <>
+        <fieldset>
+          <legend>
+            <span>02</span> Match performance
+          </legend>
+          <div className="form-grid performance-grid">
             <label>
-              Saves
+              Matches
               <input
                 type="number"
-                {...register("performance.positionSpecific.saves", { valueAsNumber: true })}
+                {...register("performance.common.matchesPlayed", { valueAsNumber: true })}
               />
             </label>
             <label>
-              Save %
+              Minutes
               <input
                 type="number"
-                {...register("performance.positionSpecific.savePercentage", {
+                {...register("performance.common.minutesPlayed", { valueAsNumber: true })}
+              />
+            </label>
+            <label>
+              Goals
+              <input
+                type="number"
+                {...register("performance.common.goals", { valueAsNumber: true })}
+              />
+            </label>
+            <label>
+              Assists
+              <input
+                type="number"
+                {...register("performance.common.assists", { valueAsNumber: true })}
+              />
+            </label>
+            <label>
+              Pass completion %
+              <input
+                type="number"
+                {...register("performance.common.passCompletionPercentage", {
                   valueAsNumber: true
                 })}
               />
             </label>
-          </>
-        ) : null}
+            <label>
+              Shots on target
+              <input
+                type="number"
+                {...register("performance.common.shotsOnTarget", { valueAsNumber: true })}
+              />
+            </label>
+            <label>
+              Yellow cards
+              <input
+                type="number"
+                {...register("performance.common.yellowCards", { valueAsNumber: true })}
+              />
+            </label>
+            <label>
+              Red cards
+              <input
+                type="number"
+                {...register("performance.common.redCards", { valueAsNumber: true })}
+              />
+            </label>
+            <label>
+              Training sessions / week
+              <input
+                type="number"
+                {...register("performance.common.trainingFrequencyPerWeek", {
+                  valueAsNumber: true
+                })}
+              />
+            </label>
+            <label>
+              Availability
+              <select {...register("performance.common.availability")}>
+                <option value="available">Available</option>
+                <option value="limited">Limited</option>
+                <option value="unavailable">Unavailable</option>
+              </select>
+            </label>
+          </div>
+          <h3 className="position-metrics-title">{positionGroup} metrics</h3>
+          <div className="form-grid performance-grid">
+            {positionGroup === "goalkeeper" ? (
+              <>
+                <label>
+                  Saves
+                  <input
+                    type="number"
+                    {...register("performance.positionSpecific.saves", { valueAsNumber: true })}
+                  />
+                </label>
+                <label>
+                  Save %
+                  <input
+                    type="number"
+                    {...register("performance.positionSpecific.savePercentage", {
+                      valueAsNumber: true
+                    })}
+                  />
+                </label>
+                <label>
+                  Clean sheets
+                  <input
+                    type="number"
+                    {...register("performance.positionSpecific.cleanSheets", {
+                      valueAsNumber: true
+                    })}
+                  />
+                </label>
+                <label>
+                  Crosses claimed
+                  <input
+                    type="number"
+                    {...register("performance.positionSpecific.crossesClaimed", {
+                      valueAsNumber: true
+                    })}
+                  />
+                </label>
+                <label>
+                  Distribution accuracy %
+                  <input
+                    type="number"
+                    {...register("performance.positionSpecific.distributionAccuracy", {
+                      valueAsNumber: true
+                    })}
+                  />
+                </label>
+              </>
+            ) : null}
+            {positionGroup === "defender" ? (
+              <>
+                <label>
+                  Tackles / match
+                  <input
+                    type="number"
+                    step="0.1"
+                    {...register("performance.positionSpecific.tacklesPerMatch", {
+                      valueAsNumber: true
+                    })}
+                  />
+                </label>
+                <label>
+                  Interceptions / match
+                  <input
+                    type="number"
+                    step="0.1"
+                    {...register("performance.positionSpecific.interceptionsPerMatch", {
+                      valueAsNumber: true
+                    })}
+                  />
+                </label>
+                <label>
+                  Clearances / match
+                  <input
+                    type="number"
+                    step="0.1"
+                    {...register("performance.positionSpecific.clearancesPerMatch", {
+                      valueAsNumber: true
+                    })}
+                  />
+                </label>
+                <label>
+                  Aerial duels won %
+                  <input
+                    type="number"
+                    {...register("performance.positionSpecific.aerialDuelsWonPercentage", {
+                      valueAsNumber: true
+                    })}
+                  />
+                </label>
+                <label>
+                  Passing accuracy %
+                  <input
+                    type="number"
+                    {...register("performance.positionSpecific.passingAccuracy", {
+                      valueAsNumber: true
+                    })}
+                  />
+                </label>
+              </>
+            ) : null}
+            {positionGroup === "midfielder" ? (
+              <>
+                <label>
+                  Pass completion %
+                  <input
+                    type="number"
+                    {...register("performance.positionSpecific.passCompletionPercentage", {
+                      valueAsNumber: true
+                    })}
+                  />
+                </label>
+                <label>
+                  Key passes / match
+                  <input
+                    type="number"
+                    step="0.1"
+                    {...register("performance.positionSpecific.keyPassesPerMatch", {
+                      valueAsNumber: true
+                    })}
+                  />
+                </label>
+                <label>
+                  Assists
+                  <input
+                    type="number"
+                    {...register("performance.positionSpecific.assists", { valueAsNumber: true })}
+                  />
+                </label>
+                <label>
+                  Ball recoveries / match
+                  <input
+                    type="number"
+                    step="0.1"
+                    {...register("performance.positionSpecific.ballRecoveriesPerMatch", {
+                      valueAsNumber: true
+                    })}
+                  />
+                </label>
+                <label>
+                  Chances created
+                  <input
+                    type="number"
+                    {...register("performance.positionSpecific.chancesCreated", {
+                      valueAsNumber: true
+                    })}
+                  />
+                </label>
+              </>
+            ) : null}
+            {positionGroup === "forward" ? (
+              <>
+                <label>
+                  Position goals
+                  <input
+                    type="number"
+                    {...register("performance.positionSpecific.goals", { valueAsNumber: true })}
+                  />
+                </label>
+                <label>
+                  Total shots
+                  <input
+                    type="number"
+                    {...register("performance.positionSpecific.shots", { valueAsNumber: true })}
+                  />
+                </label>
+                <label>
+                  Shots on target
+                  <input
+                    type="number"
+                    {...register("performance.positionSpecific.shotsOnTarget", {
+                      valueAsNumber: true
+                    })}
+                  />
+                </label>
+                <label>
+                  Position assists
+                  <input
+                    type="number"
+                    {...register("performance.positionSpecific.assists", { valueAsNumber: true })}
+                  />
+                </label>
+                <label>
+                  Successful dribbles / match
+                  <input
+                    type="number"
+                    step="0.1"
+                    {...register("performance.positionSpecific.successfulDribblesPerMatch", {
+                      valueAsNumber: true
+                    })}
+                  />
+                </label>
+              </>
+            ) : null}
+          </div>
+        </fieldset>
 
-        {positionGroup === "forward" ? (
-          <>
+        <fieldset>
+          <legend>
+            <span>03</span> Scouting profile
+          </legend>
+          <div className="form-grid">
             <label>
-              Shots
-              <input
-                type="number"
-                {...register("performance.positionSpecific.shots", { valueAsNumber: true })}
-              />
+              Preferred formation
+              <input {...register("qualitative.preferredFormation")} />
             </label>
-            <label>
-              Successful dribbles / match
-              <input
-                type="number"
-                step="0.1"
-                {...register("performance.positionSpecific.successfulDribblesPerMatch", {
-                  valueAsNumber: true
-                })}
-              />
+            <label className="wide">
+              Playing style
+              <textarea rows={3} {...register("football.preferredPlayingStyle")} />
             </label>
-          </>
-        ) : null}
-
-        {positionGroup === "defender" ? (
-          <>
-            <label>
-              Clearances / match
-              <input
-                type="number"
-                step="0.1"
-                {...register("performance.positionSpecific.clearancesPerMatch", {
-                  valueAsNumber: true
-                })}
-              />
+            <label className="wide">
+              Strongest qualities
+              <textarea rows={3} {...register("qualitative.strongestQualities")} />
             </label>
-            <label>
-              Aerial duels won %
-              <input
-                type="number"
-                {...register("performance.positionSpecific.aerialDuelsWonPercentage", {
-                  valueAsNumber: true
-                })}
-              />
+            <label className="wide">
+              Development goals
+              <textarea rows={3} {...register("qualitative.developmentGoals")} />
             </label>
-          </>
-        ) : null}
-
-        {positionGroup === "midfielder" ? (
-          <>
-            <label>
-              Key passes / match
-              <input
-                type="number"
-                step="0.1"
-                {...register("performance.positionSpecific.keyPassesPerMatch", {
-                  valueAsNumber: true
-                })}
-              />
+            <label className="wide">
+              Coach feedback
+              <textarea rows={3} {...register("qualitative.coachFeedback")} />
             </label>
-            <label>
-              Chances created
-              <input
-                type="number"
-                {...register("performance.positionSpecific.chancesCreated", {
-                  valueAsNumber: true
-                })}
-              />
+            <label className="wide">
+              Match experience
+              <textarea rows={3} {...register("qualitative.matchExperience")} />
             </label>
-          </>
-        ) : null}
-
-        <label className="wide">
-          Strongest qualities
-          <textarea rows={3} {...register("qualitative.strongestQualities")} />
-        </label>
-        <label className="wide">
-          Development goals
-          <textarea rows={3} {...register("qualitative.developmentGoals")} />
-        </label>
-        <label className="wide">
-          Coach feedback
-          <textarea rows={3} {...register("qualitative.coachFeedback")} />
-        </label>
+            <label className="wide">
+              Career objective
+              <textarea rows={3} {...register("football.careerObjective")} />
+            </label>
+            <label className="wide">
+              Personal statement
+              <textarea rows={3} {...register("qualitative.personalStatement")} />
+            </label>
+          </div>
+        </fieldset>
       </form>
       {!parsed.success ? <p className="error">Profile draft is incomplete or invalid.</p> : null}
     </section>

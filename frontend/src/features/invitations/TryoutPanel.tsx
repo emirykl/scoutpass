@@ -191,7 +191,7 @@ function ScoutTryoutComposer({
             setNoteSaved(false);
           }}
         />
-        <small>Local only. Never included in Pears events.</small>
+        <small>Saved only on this device and never shown to the player.</small>
       </label>
       <button type="button" className="secondary-button" onClick={savePrivateNote}>
         Save private note
@@ -247,7 +247,7 @@ function ScoutTryoutComposer({
         </div>
       ) : null}
       {invitation ? <p className="status-line">Status: {invitation.status}</p> : null}
-      {!runtimeAvailable ? <div className="warning">Desktop runtime required to send.</div> : null}
+      {!runtimeAvailable ? <div className="warning">Open the desktop app to send.</div> : null}
       {error ? <p className="error">{error}</p> : null}
     </section>
   );

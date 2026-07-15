@@ -1,6 +1,5 @@
 import { useState } from "react";
 
-import type { RuntimeSnapshot } from "../../runtime/local-runtime.js";
 import {
   createRuntimeRequest,
   isDesktopRuntimeAvailable,
@@ -8,17 +7,12 @@ import {
 } from "../../runtime/runtime-bridge.js";
 import { runtimeFailureError, toUserFacingMessage } from "../../runtime/user-facing-errors.js";
 
-interface SettingsPanelProps {
-  readonly snapshot: RuntimeSnapshot;
-  readonly connectionStatus: string;
-}
-
 type DataCounts = Extract<
   Awaited<ReturnType<typeof requestRuntime>>,
   { readonly type: "settings.data.previewed" }
 >["payload"]["counts"];
 
-export function SettingsPanel({ snapshot, connectionStatus }: SettingsPanelProps) {
+export function SettingsPanel() {
   const [counts, setCounts] = useState<DataCounts>();
   const [clearConfirmed, setClearConfirmed] = useState(false);
   const [cleared, setCleared] = useState(false);
@@ -73,62 +67,21 @@ export function SettingsPanel({ snapshot, connectionStatus }: SettingsPanelProps
     }
   };
 
-  const exportDebug = async () => {
-    setBusy(true);
-    setError(undefined);
-    try {
-      const event = await requestRuntime({
-        ...createRuntimeRequest(),
-        type: "settings.debug.export"
-      });
-      if (event.type === "operation.failed") {
-        throw runtimeFailureError(
-          event.payload,
-          "The sanitized debug export could not be created."
-        );
-      }
-      if (event.type !== "settings.debug.exported") throw new Error("Debug export is unavailable.");
-      downloadDebugExport(event.payload.content);
-    } catch (caught) {
-      setError(toMessage(caught));
-    } finally {
-      setBusy(false);
-    }
-  };
-
   return (
     <section className="panel" aria-labelledby="settings-title">
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow">Local runtime</p>
-          <h2 id="settings-title">Settings</h2>
-        </div>
-        <span className="testnet-badge">Ethereum Sepolia · Testnet only</span>
-      </div>
-      <div className="settings-status-grid">
-        <Status label="QVAC model" value={snapshot.qvac} />
-        <Status label="Pears" value={connectionStatus} />
-        <Status label="Wallet network" value="Ethereum Sepolia" />
-        <Status label="Desktop runtime" value={runtimeAvailable ? "ready" : "unavailable"} />
-      </div>
-
-      <section className="settings-section" aria-labelledby="debug-title">
-        <h3 id="debug-title">Sanitized debug export</h3>
-        <p className="muted">
-          Excludes profile payloads, private notes, connection keys, topics and recovery material.
+      <div>
+        <p className="eyebrow">Your device</p>
+        <h2 id="settings-title">Privacy & local data</h2>
+        <p className="summary">
+          Review what ScoutPass stores on this device before permanently removing it.
         </p>
-        <button
-          type="button"
-          className="secondary-button"
-          disabled={!runtimeAvailable || busy}
-          onClick={() => void exportDebug()}
-        >
-          Download debug export
-        </button>
-      </section>
+      </div>
 
       <section className="settings-section danger-zone" aria-labelledby="clear-title">
-        <h3 id="clear-title">Clear local app data</h3>
+        <h3 id="clear-title">Delete local app data</h3>
+        <p className="muted">
+          Your wallet recovery remains protected separately in macOS Keychain.
+        </p>
         {counts === undefined ? (
           <button
             type="button"
@@ -154,7 +107,7 @@ export function SettingsPanel({ snapshot, connectionStatus }: SettingsPanelProps
                 checked={clearConfirmed}
                 onChange={(event) => setClearConfirmed(event.target.checked)}
               />
-              Clear the reviewed app data. Wallet recovery material remains in macOS Keychain.
+              I understand that the reviewed app data will be permanently deleted.
             </label>
             <button
               type="button"
@@ -162,35 +115,19 @@ export function SettingsPanel({ snapshot, connectionStatus }: SettingsPanelProps
               disabled={busy || !clearConfirmed}
               onClick={() => void clearData()}
             >
-              Clear reviewed data
+              Delete reviewed data
             </button>
           </>
         )}
-        {cleared ? <p className="success">Local app data cleared.</p> : null}
+        {cleared ? <p className="success">Local app data deleted.</p> : null}
       </section>
-      {!runtimeAvailable ? <div className="warning">Desktop runtime required.</div> : null}
+      {!runtimeAvailable ? (
+        <div className="warning">Data controls are available in the desktop app.</div>
+      ) : null}
       {error ? <p className="error">{error}</p> : null}
     </section>
   );
 }
-
-function Status({ label, value }: { readonly label: string; readonly value: string }) {
-  return (
-    <div>
-      <span>{label}</span>
-      <strong>{value.replaceAll("_", " ")}</strong>
-    </div>
-  );
-}
-
-const downloadDebugExport = (content: string) => {
-  const url = URL.createObjectURL(new Blob([content], { type: "application/json" }));
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = `scoutpass-debug-${new Date().toISOString().replaceAll(":", "-")}.json`;
-  anchor.click();
-  URL.revokeObjectURL(url);
-};
 
 const toMessage = (error: unknown): string =>
   toUserFacingMessage(error, "The settings operation failed.");

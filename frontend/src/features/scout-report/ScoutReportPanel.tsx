@@ -1,20 +1,14 @@
 import { useState } from "react";
 
-import {
-  REPORT_DISCLAIMER,
-  type PlayerProfile,
-  type ScoutReport
-} from "@scoutpass/backend/contracts";
+import { REPORT_DISCLAIMER, type ScoutReport } from "@scoutpass/backend/contracts";
 
 interface ScoutReportPanelProps {
-  readonly player: PlayerProfile;
   readonly report: ScoutReport;
   readonly desktopRuntimeAvailable: boolean;
   readonly onGenerate: () => Promise<void>;
 }
 
 export function ScoutReportPanel({
-  player,
   report,
   desktopRuntimeAvailable,
   onGenerate
@@ -30,7 +24,7 @@ export function ScoutReportPanel({
       setStatus("idle");
     } catch (error) {
       setErrorMessage(
-        error instanceof Error ? error.message : "The local QVAC report could not be generated."
+        error instanceof Error ? error.message : "The private AI report could not be generated."
       );
       setStatus("error");
     }
@@ -40,8 +34,8 @@ export function ScoutReportPanel({
     <section className="panel" aria-labelledby="report-title">
       <div className="section-heading">
         <div>
-          <p className="eyebrow">QVAC report</p>
-          <h2 id="report-title">Local scouting report</h2>
+          <p className="eyebrow">Private AI analysis</p>
+          <h2 id="report-title">Your scouting report</h2>
         </div>
         <button
           type="button"
@@ -49,12 +43,12 @@ export function ScoutReportPanel({
           disabled={!desktopRuntimeAvailable || status === "loading"}
           onClick={() => void generate()}
         >
-          {status === "loading" ? "Generating locally..." : "Generate with QVAC"}
+          {status === "loading" ? "Generating on this device..." : "Generate report"}
         </button>
       </div>
 
       {!desktopRuntimeAvailable ? (
-        <div className="notice">Open the Player desktop app to run the local QVAC model.</div>
+        <div className="notice">Open the Player desktop app to generate a private AI report.</div>
       ) : null}
       {status === "error" && errorMessage ? (
         <div className="notice" role="alert">
@@ -133,21 +127,6 @@ export function ScoutReportPanel({
           </ul>
         </article>
       </div>
-
-      <details>
-        <summary>Exact data preview for QVAC</summary>
-        <pre>
-          {JSON.stringify(
-            {
-              football: player.football,
-              performance: player.performance,
-              qualitative: player.qualitative
-            },
-            null,
-            2
-          )}
-        </pre>
-      </details>
     </section>
   );
 }

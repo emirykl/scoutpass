@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 
 import type { RuntimeEvent } from "@scoutpass/backend/contracts";
 
-import type { RuntimeSnapshot } from "../../runtime/local-runtime.js";
 import {
   createRuntimeRequest,
   isDesktopRuntimeAvailable,
@@ -12,7 +11,6 @@ import {
 import { runtimeFailureError, toUserFacingMessage } from "../../runtime/user-facing-errors.js";
 
 interface ConnectionPanelProps {
-  readonly snapshot: RuntimeSnapshot;
   readonly role: "player" | "scout";
   readonly relationshipId: string;
   readonly onStatusChange?: ((status: PeerConnectionStatus) => void) | undefined;
@@ -23,15 +21,9 @@ type PeerConnectionStatus = Extract<
   { readonly type: "connection.status" }
 >["payload"]["status"];
 
-export function ConnectionPanel({
-  snapshot,
-  role,
-  relationshipId,
-  onStatusChange
-}: ConnectionPanelProps) {
+export function ConnectionPanel({ role, relationshipId, onStatusChange }: ConnectionPanelProps) {
   const [inviteCode, setInviteCode] = useState("");
-  const [connectionStatus, setConnectionStatus] = useState<PeerConnectionStatus>("idle");
-  const [testEventStatus, setTestEventStatus] = useState<"not_sent" | "sent">("not_sent");
+  const [, setConnectionStatus] = useState<PeerConnectionStatus>("idle");
   const [error, setError] = useState<string>();
   const runtimeAvailable = isDesktopRuntimeAvailable();
 
@@ -85,34 +77,21 @@ export function ConnectionPanel({
     }
   };
 
-  const sendTestEvent = async () => {
-    setError(undefined);
-    try {
-      const event = await requestRuntime({
-        ...createRuntimeRequest(),
-        type: "connection.test_event.send",
-        payload: { relationshipId }
-      });
-      if (event.type === "operation.failed") {
-        throw runtimeFailureError(event.payload, "The test event could not be sent.");
-      }
-      setTestEventStatus("sent");
-    } catch (caught) {
-      setError(toMessage(caught));
-    }
-  };
-
   return (
     <section className="panel compact-panel" aria-labelledby="connection-title">
-      <p className="eyebrow">Pears network</p>
-      <h2 id="connection-title">Scouting connection</h2>
-      <div className="status-grid">
-        <Status label="QVAC" value={snapshot.qvac} />
-        <Status label="Pears" value={runtimeAvailable ? snapshot.pears : "desktop_required"} />
-        <Status label="Wallet" value={snapshot.wallet} />
-        <Status label="Connection" value={connectionStatus} />
-        <Status label="Test event" value={testEventStatus} />
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">Private connection</p>
+          <h2 id="connection-title">
+            {role === "scout" ? "Invite a player" : "Connect with a scout"}
+          </h2>
+        </div>
       </div>
+      <p className="summary">
+        {role === "scout"
+          ? "Create one connection code and send it directly to the player."
+          : "Paste the connection code you received from the scout."}
+      </p>
       <div className="connection-actions">
         {role === "scout" ? (
           <button
@@ -121,11 +100,11 @@ export function ConnectionPanel({
             onClick={() => void createInvite()}
             disabled={!runtimeAvailable}
           >
-            Create invite
+            Create connection code
           </button>
         ) : null}
         <label>
-          Invite code
+          Connection code
           <textarea
             rows={4}
             value={inviteCode}
@@ -141,32 +120,13 @@ export function ConnectionPanel({
             onClick={() => void connectFromInvite()}
             disabled={!runtimeAvailable || inviteCode.trim().length === 0}
           >
-            Connect
+            Connect privately
           </button>
         ) : null}
-        <button
-          type="button"
-          className="secondary-button"
-          onClick={() => void sendTestEvent()}
-          disabled={!runtimeAvailable || connectionStatus !== "connected"}
-        >
-          Send test event
-        </button>
       </div>
-      {!runtimeAvailable ? (
-        <div className="warning">Desktop runtime required for real Pears networking.</div>
-      ) : null}
+      {!runtimeAvailable ? <div className="warning">Available in the desktop app.</div> : null}
       {error ? <p className="error">{error}</p> : null}
     </section>
-  );
-}
-
-function Status({ label, value }: { readonly label: string; readonly value: string }) {
-  return (
-    <div className="status-card">
-      <span>{label}</span>
-      <strong>{value.replaceAll("_", " ")}</strong>
-    </div>
   );
 }
 
