@@ -14,6 +14,7 @@ interface ConnectionPanelProps {
   readonly snapshot: RuntimeSnapshot;
   readonly role: "player" | "scout";
   readonly relationshipId: string;
+  readonly onStatusChange?: ((status: PeerConnectionStatus) => void) | undefined;
 }
 
 type PeerConnectionStatus = Extract<
@@ -21,7 +22,12 @@ type PeerConnectionStatus = Extract<
   { readonly type: "connection.status" }
 >["payload"]["status"];
 
-export function ConnectionPanel({ snapshot, role, relationshipId }: ConnectionPanelProps) {
+export function ConnectionPanel({
+  snapshot,
+  role,
+  relationshipId,
+  onStatusChange
+}: ConnectionPanelProps) {
   const [inviteCode, setInviteCode] = useState("");
   const [connectionStatus, setConnectionStatus] = useState<PeerConnectionStatus>("idle");
   const [testEventStatus, setTestEventStatus] = useState<"not_sent" | "sent">("not_sent");
@@ -33,9 +39,10 @@ export function ConnectionPanel({ snapshot, role, relationshipId }: ConnectionPa
       subscribeRuntimeEvents((event) => {
         if (event.type === "connection.status") {
           setConnectionStatus(event.payload.status);
+          onStatusChange?.(event.payload.status);
         }
       }),
-    []
+    [onStatusChange]
   );
 
   const createInvite = async () => {
@@ -51,6 +58,7 @@ export function ConnectionPanel({ snapshot, role, relationshipId }: ConnectionPa
       }
       setInviteCode(event.payload.inviteCode);
       setConnectionStatus("invite_ready");
+      onStatusChange?.("invite_ready");
     } catch (caught) {
       setConnectionStatus("error");
       setError(toMessage(caught));
@@ -60,6 +68,7 @@ export function ConnectionPanel({ snapshot, role, relationshipId }: ConnectionPa
   const connectFromInvite = async () => {
     setError(undefined);
     setConnectionStatus("connecting");
+    onStatusChange?.("connecting");
     try {
       const event = await requestRuntime({
         ...createRuntimeRequest(),

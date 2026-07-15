@@ -46,6 +46,7 @@ export interface WalletGateway {
   getTokenBalance(address: string): Promise<string>;
   quoteTransfer(proposal: PaymentProposal): Promise<{ readonly feeBaseUnits: string }>;
   confirmAndSend(proposal: PaymentProposal): Promise<PaymentReference>;
+  getTransferStatus(payment: PaymentReference): Promise<PaymentReference>;
   dispose(): Promise<void>;
 }
 

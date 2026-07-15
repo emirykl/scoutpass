@@ -18,6 +18,7 @@ interface TryoutPanelProps {
   readonly role: "player" | "scout";
   readonly relationshipId: string;
   readonly receivedPackage?: SharedPlayerPackage | undefined;
+  readonly onInvitationChange?: ((invitation: TryoutInvitation) => void) | undefined;
 }
 
 const DEFAULT_FORM = {
@@ -35,7 +36,12 @@ const DEFAULT_FORM = {
   travelSupportAmount: "25.50"
 };
 
-export function TryoutPanel({ role, relationshipId, receivedPackage }: TryoutPanelProps) {
+export function TryoutPanel({
+  role,
+  relationshipId,
+  receivedPackage,
+  onInvitationChange
+}: TryoutPanelProps) {
   const [invitation, setInvitation] = useState<TryoutInvitation>();
 
   useEffect(
@@ -46,9 +52,10 @@ export function TryoutPanel({ role, relationshipId, receivedPackage }: TryoutPan
           event.payload.invitation.relationshipId === relationshipId
         ) {
           setInvitation(event.payload.invitation);
+          onInvitationChange?.(event.payload.invitation);
         }
       }),
-    [relationshipId]
+    [onInvitationChange, relationshipId]
   );
 
   return role === "scout" ? (
@@ -56,13 +63,19 @@ export function TryoutPanel({ role, relationshipId, receivedPackage }: TryoutPan
       relationshipId={relationshipId}
       receivedPackage={receivedPackage}
       invitation={invitation}
-      onInvitationChange={setInvitation}
+      onInvitationChange={(next) => {
+        setInvitation(next);
+        onInvitationChange?.(next);
+      }}
     />
   ) : (
     <PlayerInvitation
       relationshipId={relationshipId}
       invitation={invitation}
-      onInvitationChange={setInvitation}
+      onInvitationChange={(next) => {
+        setInvitation(next);
+        onInvitationChange?.(next);
+      }}
     />
   );
 }

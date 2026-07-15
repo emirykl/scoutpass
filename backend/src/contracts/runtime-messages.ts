@@ -7,13 +7,33 @@ import {
   tryoutInvitationSchema
 } from "../domain/models/invitation.js";
 import { playerProfileSchema } from "../domain/models/player-profile.js";
+import { storedScoutReportSchema } from "../domain/models/scout-report.js";
 import { sharedPlayerPackageSchema, shareSelectionSchema } from "../domain/models/sharing.js";
-import { walletPublicMetadataSchema } from "../domain/models/wallet.js";
+import { scoutPassEventSchema } from "../domain/models/events.js";
+import {
+  paymentProposalSchema,
+  paymentReferenceSchema,
+  walletPublicMetadataSchema
+} from "../domain/models/wallet.js";
 
 const requestFields = {
   requestId: idSchema,
   sentAt: isoDateTimeSchema
 };
+
+export const localDataCountsSchema = z
+  .object({
+    profiles: z.number().int().nonnegative(),
+    reports: z.number().int().nonnegative(),
+    relationships: z.number().int().nonnegative(),
+    receivedPackages: z.number().int().nonnegative(),
+    invitations: z.number().int().nonnegative(),
+    scoutPrivateNotes: z.number().int().nonnegative(),
+    wallets: z.number().int().nonnegative(),
+    payments: z.number().int().nonnegative(),
+    relationshipEvents: z.number().int().nonnegative()
+  })
+  .strict();
 
 export const runtimeCommandSchema = z.discriminatedUnion("type", [
   z.object({ ...requestFields, type: z.literal("runtime.status.get") }).strict(),
@@ -134,8 +154,63 @@ export const runtimeCommandSchema = z.discriminatedUnion("type", [
         })
         .strict()
     })
-    .strict()
+    .strict(),
+  z
+    .object({
+      ...requestFields,
+      type: z.literal("payment.review"),
+      payload: z.object({ invitationId: idSchema }).strict()
+    })
+    .strict(),
+  z
+    .object({
+      ...requestFields,
+      type: z.literal("payment.confirm"),
+      payload: z
+        .object({
+          proposalId: idSchema,
+          userConfirmed: z.literal(true)
+        })
+        .strict()
+    })
+    .strict(),
+  z
+    .object({
+      ...requestFields,
+      type: z.literal("payment.reject"),
+      payload: z.object({ proposalId: idSchema }).strict()
+    })
+    .strict(),
+  z
+    .object({
+      ...requestFields,
+      type: z.literal("payment.status.get"),
+      payload: z.object({ paymentId: idSchema }).strict()
+    })
+    .strict(),
+  z.object({ ...requestFields, type: z.literal("workspace.snapshot.get") }).strict(),
+  z.object({ ...requestFields, type: z.literal("settings.data.preview") }).strict(),
+  z
+    .object({
+      ...requestFields,
+      type: z.literal("settings.data.clear"),
+      payload: z.object({ userConfirmed: z.literal(true) }).strict()
+    })
+    .strict(),
+  z.object({ ...requestFields, type: z.literal("settings.debug.export") }).strict()
 ]);
+
+export const workspaceSnapshotSchema = z
+  .object({
+    profiles: z.array(playerProfileSchema),
+    reports: z.array(storedScoutReportSchema),
+    receivedPackages: z.array(sharedPlayerPackageSchema),
+    invitations: z.array(tryoutInvitationSchema),
+    wallets: z.array(walletPublicMetadataSchema),
+    payments: z.array(paymentReferenceSchema),
+    activityEvents: z.array(scoutPassEventSchema)
+  })
+  .strict();
 
 export const runtimeEventSchema = z.discriminatedUnion("type", [
   z
@@ -149,6 +224,54 @@ export const runtimeEventSchema = z.discriminatedUnion("type", [
           qvac: z.enum(["not_checked", "unavailable", "ready"]),
           pears: z.enum(["not_started", "disconnected", "connected"]),
           wallet: z.enum(["not_initialized", "ready", "error"])
+        })
+        .strict()
+    })
+    .strict(),
+  z
+    .object({
+      requestId: idSchema,
+      occurredAt: isoDateTimeSchema,
+      type: z.literal("workspace.snapshot"),
+      payload: workspaceSnapshotSchema
+    })
+    .strict(),
+  z
+    .object({
+      requestId: idSchema,
+      occurredAt: isoDateTimeSchema,
+      type: z.literal("settings.data.previewed"),
+      payload: z
+        .object({
+          counts: localDataCountsSchema,
+          cleared: z.boolean()
+        })
+        .strict()
+    })
+    .strict(),
+  z
+    .object({
+      requestId: idSchema,
+      occurredAt: isoDateTimeSchema,
+      type: z.literal("settings.debug.exported"),
+      payload: z
+        .object({
+          content: z
+            .string()
+            .min(2)
+            .max(64 * 1024)
+        })
+        .strict()
+    })
+    .strict(),
+  z
+    .object({
+      requestId: idSchema,
+      occurredAt: isoDateTimeSchema,
+      type: z.literal("payment.updated"),
+      payload: z
+        .object({
+          payment: z.union([paymentProposalSchema, paymentReferenceSchema])
         })
         .strict()
     })
@@ -270,3 +393,4 @@ export const runtimeEventSchema = z.discriminatedUnion("type", [
 
 export type RuntimeCommand = z.infer<typeof runtimeCommandSchema>;
 export type RuntimeEvent = z.infer<typeof runtimeEventSchema>;
+export type WorkspaceSnapshot = z.infer<typeof workspaceSnapshotSchema>;

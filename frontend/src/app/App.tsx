@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 
-import type { SharedPlayerPackage } from "@scoutpass/backend/contracts";
+import type {
+  PaymentReference,
+  RuntimeEvent,
+  ScoutPassEvent,
+  SharedPlayerPackage,
+  TryoutInvitation,
+  WalletPublicMetadata
+} from "@scoutpass/backend/contracts";
 import { getRuntimeInfo } from "@scoutpass/backend/runtime";
 import type { PreparedPlayerShare } from "@scoutpass/backend/sharing";
 
@@ -12,6 +19,9 @@ import { ScoutReportPanel } from "../features/scout-report/ScoutReportPanel.js";
 import { ReceivedPackagePanel, SharingPanel } from "../features/sharing/SharingPanel.js";
 import { TryoutPanel } from "../features/invitations/TryoutPanel.js";
 import { WalletPanel } from "../features/wallet/WalletPanel.js";
+import { PaymentPanel } from "../features/wallet/PaymentPanel.js";
+import { DashboardPanel } from "../features/dashboard/DashboardPanel.js";
+import { SettingsPanel } from "../features/settings/SettingsPanel.js";
 import {
   createLocalPreviewReport,
   demoPlayerProfile,
@@ -28,44 +38,87 @@ const runtime = getRuntimeInfo();
 const RELATIONSHIP_ID = "relationship_demo_001";
 
 type Role = "player" | "scout";
-type WorkspaceStep = "profile" | "report" | "connect" | "share" | "player" | "invite" | "wallet";
+type WorkspaceStep =
+  | "dashboard"
+  | "profile"
+  | "report"
+  | "connect"
+  | "share"
+  | "player"
+  | "invite"
+  | "wallet"
+  | "payment"
+  | "settings";
+
+type PeerConnectionStatus = Extract<
+  RuntimeEvent,
+  { readonly type: "connection.status" }
+>["payload"]["status"];
 
 const WORKSPACE_STEPS: Record<
   Role,
   ReadonlyArray<{ readonly id: WorkspaceStep; readonly label: string }>
 > = {
   player: [
+    { id: "dashboard", label: "Overview" },
     { id: "profile", label: "Profile" },
     { id: "report", label: "Local report" },
     { id: "connect", label: "Connect" },
     { id: "share", label: "Share" },
     { id: "invite", label: "Tryout" },
-    { id: "wallet", label: "Wallet" }
+    { id: "wallet", label: "Wallet" },
+    { id: "payment", label: "Support" },
+    { id: "settings", label: "Settings" }
   ],
   scout: [
+    { id: "dashboard", label: "Overview" },
     { id: "connect", label: "Connect" },
     { id: "player", label: "Player" },
     { id: "invite", label: "Tryout" },
-    { id: "wallet", label: "Wallet" }
+    { id: "wallet", label: "Wallet" },
+    { id: "payment", label: "Support" },
+    { id: "settings", label: "Settings" }
   ]
 };
 
 export function App() {
   const [role, setRole] = useState<Role>("player");
-  const [activeStep, setActiveStep] = useState<WorkspaceStep>("profile");
+  const [activeStep, setActiveStep] = useState<WorkspaceStep>("dashboard");
   const [player, setPlayer] = useState(demoPlayerProfile);
   const [report, setReport] = useState(() => createLocalPreviewReport(demoPlayerProfile));
   const [receivedPackage, setReceivedPackage] = useState<SharedPlayerPackage>();
+  const [invitation, setInvitation] = useState<TryoutInvitation>();
+  const [payment, setPayment] = useState<PaymentReference>();
+  const [, setWallet] = useState<WalletPublicMetadata>();
+  const [connectionStatus, setConnectionStatus] = useState<PeerConnectionStatus>("idle");
+  const [activityEvents, setActivityEvents] = useState<readonly ScoutPassEvent[]>([]);
 
-  useEffect(
-    () =>
-      subscribeRuntimeEvents((event) => {
-        if (event.type === "share.received") {
-          setReceivedPackage(event.payload.package);
-        }
-      }),
-    []
-  );
+  const handleRuntimeEvent = useCallback((event: RuntimeEvent) => {
+    if (event.type === "share.received") setReceivedPackage(event.payload.package);
+    if (event.type === "invitation.updated") setInvitation(event.payload.invitation);
+    if (event.type === "payment.updated") setPayment(event.payload.payment);
+    if (event.type === "wallet.updated") setWallet(event.payload.wallet);
+    if (event.type === "connection.status") setConnectionStatus(event.payload.status);
+    if (event.type === "workspace.snapshot") {
+      const snapshotPlayer = event.payload.profiles.at(-1);
+      const snapshotReport = event.payload.reports.at(-1);
+      if (snapshotPlayer) setPlayer(snapshotPlayer);
+      if (snapshotReport) setReport(snapshotReport.content);
+      setReceivedPackage(event.payload.receivedPackages.at(-1));
+      setInvitation(event.payload.invitations.at(-1));
+      setPayment(event.payload.payments.at(-1));
+      setActivityEvents(event.payload.activityEvents);
+    }
+  }, []);
+
+  useEffect(() => subscribeRuntimeEvents(handleRuntimeEvent), [handleRuntimeEvent]);
+
+  useEffect(() => {
+    if (!isDesktopRuntimeAvailable()) return;
+    void requestRuntime({ ...createRuntimeRequest(), type: "workspace.snapshot.get" })
+      .then(handleRuntimeEvent)
+      .catch(() => undefined);
+  }, [handleRuntimeEvent]);
 
   const loadDemo = useCallback(() => {
     setPlayer(demoPlayerProfile);
@@ -152,7 +205,25 @@ export function App() {
           ))}
         </nav>
 
+        <div className={`connection-strip status-${connectionStatus}`} role="status">
+          <span className={connectionStatus === "connected" ? "status-dot ready" : "status-dot"} />
+          Pears connection: {connectionStatus.replaceAll("_", " ")}
+        </div>
+
         <div className="workspace-panel">
+          {activeStep === "dashboard" ? (
+            <DashboardPanel
+              role={role}
+              player={player}
+              report={report}
+              receivedPackage={receivedPackage}
+              invitation={invitation}
+              payment={payment}
+              connectionStatus={connectionStatus}
+              activityEvents={activityEvents}
+              onNavigate={(step) => setActiveStep(step as WorkspaceStep)}
+            />
+          ) : null}
           {role === "player" && activeStep === "profile" ? (
             <PlayerProfileForm value={player} onChange={setPlayer} onLoadDemo={loadDemo} />
           ) : null}
@@ -168,6 +239,7 @@ export function App() {
               snapshot={runtimeSnapshot}
               role={role}
               relationshipId={RELATIONSHIP_ID}
+              onStatusChange={setConnectionStatus}
             />
           ) : null}
           {role === "player" && activeStep === "share" ? (
@@ -181,10 +253,22 @@ export function App() {
               role={role}
               relationshipId={RELATIONSHIP_ID}
               receivedPackage={role === "scout" ? receivedPackage : undefined}
+              onInvitationChange={setInvitation}
             />
           ) : null}
           {activeStep === "wallet" ? (
-            <WalletPanel role={role} relationshipId={RELATIONSHIP_ID} />
+            <WalletPanel role={role} relationshipId={RELATIONSHIP_ID} onWalletChange={setWallet} />
+          ) : null}
+          {activeStep === "payment" ? (
+            <PaymentPanel
+              role={role}
+              invitation={invitation}
+              payment={payment}
+              onPaymentChange={setPayment}
+            />
+          ) : null}
+          {activeStep === "settings" ? (
+            <SettingsPanel snapshot={runtimeSnapshot} connectionStatus={connectionStatus} />
           ) : null}
         </div>
 

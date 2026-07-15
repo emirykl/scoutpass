@@ -18,6 +18,7 @@ import { resolveInstanceDataFile } from "../src/infrastructure/storage/instance-
 import { PROTOCOL_VERSION } from "../src/domain/constants.js";
 import type { ProfileReceivedEvent } from "../src/domain/models/events.js";
 import { createPlayer, NOW, PUBLIC_KEY } from "./fixtures.js";
+import { LocalDataMaintenanceService } from "../src/application/settings/local-data-maintenance-service.js";
 
 const directories: string[] = [];
 
@@ -125,5 +126,21 @@ describe("local JSON storage", () => {
     };
 
     await expect(repositories.wallets.save(unsafeWallet as never)).rejects.toThrow();
+  });
+
+  it("previews, sanitizes, and explicitly clears local app data", async () => {
+    const filePath = await createDataFile();
+    const store = new JsonFileStore(filePath);
+    const repositories = createJsonRepositories(store);
+    await repositories.profiles.save(createPlayer());
+    const maintenance = new LocalDataMaintenanceService(store);
+
+    await expect(maintenance.previewClear()).resolves.toMatchObject({ profiles: 1 });
+    const debugExport = await maintenance.createSanitizedDebugExport();
+    expect(debugExport).not.toContain("Emir Yenikale");
+    expect(debugExport).not.toContain("strongestQualities");
+    await expect(maintenance.clear(false)).rejects.toThrow("Explicit confirmation");
+    await expect(maintenance.clear(true)).resolves.toMatchObject({ profiles: 1 });
+    await expect(maintenance.previewClear()).resolves.toMatchObject({ profiles: 0 });
   });
 });

@@ -94,6 +94,19 @@ export class JsonFileStore {
     this.#state = undefined;
   }
 
+  public async clear(): Promise<LocalDataState> {
+    let result: LocalDataState | undefined;
+    this.#writeQueue = this.#writeQueue.then(async () => {
+      const empty = createEmptyLocalDataState();
+      await this.#atomicWrite(empty);
+      this.#state = empty;
+      result = structuredClone(empty);
+    });
+    await this.#writeQueue;
+    if (result === undefined) throw new Error("Local data clear completed without a result.");
+    return result;
+  }
+
   async #load(): Promise<LocalDataState> {
     let contents: string;
     try {

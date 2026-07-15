@@ -46,7 +46,7 @@ export class WalletAddressSharingService {
       senderPublicKey: this.#senderPublicKey,
       createdAt: this.#now().toISOString(),
       protocolVersion: PROTOCOL_VERSION,
-      payload: { wallet: publicWallet }
+      payload: { relationshipId, wallet: publicWallet }
     };
     await this.#connectionService.sendEvent(relationshipId, event);
     return event;

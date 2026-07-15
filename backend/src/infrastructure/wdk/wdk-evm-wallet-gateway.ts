@@ -9,6 +9,8 @@ import type {
   WalletPublicMetadata
 } from "../../domain/models/wallet.js";
 import { walletPublicMetadataSchema } from "../../domain/models/wallet.js";
+import { paymentReferenceSchema } from "../../domain/models/wallet.js";
+import { decimalAmountToBaseUnits } from "../../domain/services/payment-amount.js";
 
 const BLOCKCHAIN_ID = "ethereum-sepolia";
 
@@ -114,16 +116,42 @@ export class WdkEvmWalletGateway implements WalletGateway {
     const quote = await account.quoteTransfer({
       token: proposal.tokenAddress,
       recipient: proposal.destinationAddress,
-      amount: decimalToBaseUnits(proposal.amount, TESTNET_CONFIG.decimals)
+      amount: decimalAmountToBaseUnits(proposal.amount, TESTNET_CONFIG.decimals)
     });
     return { feeBaseUnits: quote.fee.toString() };
   }
 
-  public confirmAndSend(proposal: PaymentProposal): Promise<PaymentReference> {
-    void proposal;
-    return Promise.reject(
-      new Error("Transaction signing is disabled until the explicit Phase 7 confirmation flow.")
-    );
+  public async confirmAndSend(proposal: PaymentProposal): Promise<PaymentReference> {
+    const account = this.#requireAccount();
+    const result = await account.transfer({
+      token: proposal.tokenAddress,
+      recipient: proposal.destinationAddress,
+      amount: decimalAmountToBaseUnits(proposal.amount, TESTNET_CONFIG.decimals)
+    });
+    return paymentReferenceSchema.parse({
+      ...proposal,
+      feeBaseUnits: result.fee.toString(),
+      status: "pending",
+      transactionId: result.hash,
+      updatedAt: this.#now().toISOString()
+    });
+  }
+
+  public async getTransferStatus(payment: PaymentReference): Promise<PaymentReference> {
+    const account = this.#requireAccount();
+    if (payment.transactionId === undefined) {
+      throw new Error("Payment does not have a transaction identifier.");
+    }
+    const receipt = await account.getTransactionReceipt(payment.transactionId);
+    if (receipt === null) return structuredClone(payment);
+
+    const status = receipt.status === 1 ? "confirmed" : "failed";
+    return paymentReferenceSchema.parse({
+      ...payment,
+      status,
+      ...(status === "failed" ? { failureReason: "The testnet transaction reverted." } : {}),
+      updatedAt: this.#now().toISOString()
+    });
   }
 
   public dispose(): Promise<void> {
@@ -150,9 +178,4 @@ export const formatBaseUnits = (value: bigint, decimals: number): string => {
   const integer = padded.slice(0, -decimals);
   const fraction = padded.slice(-decimals).replace(/0+$/, "");
   return fraction.length === 0 ? integer : `${integer}.${fraction}`;
-};
-
-const decimalToBaseUnits = (amount: string, decimals: number): bigint => {
-  const [integer = "0", fraction = ""] = amount.split(".");
-  return BigInt(`${integer}${fraction.padEnd(decimals, "0")}`);
 };

@@ -36,6 +36,7 @@ describe("P2P event validation", () => {
       tokenAddress: TESTNET_CONFIG.tokenAddress,
       asset: "USD₮" as const,
       amount: "25.50",
+      feeBaseUnits: "21000000000000",
       status: "confirmed" as const,
       transactionId: `0x${"2".repeat(64)}`,
       createdAt: NOW.toISOString(),
@@ -50,6 +51,7 @@ describe("P2P event validation", () => {
       tokenAddress: payment.tokenAddress,
       asset: payment.asset,
       amount: payment.amount,
+      feeBaseUnits: payment.feeBaseUnits,
       status: "proposed" as const,
       createdAt: payment.createdAt,
       updatedAt: payment.updatedAt
@@ -81,12 +83,30 @@ describe("P2P event validation", () => {
       {
         ...base,
         id: "event_demo_005",
+        type: "wallet.address_shared",
+        payload: {
+          relationshipId: "relationship_demo_001",
+          wallet: {
+            id: "wallet_player_demo",
+            ownerRole: "player",
+            network: TESTNET_CONFIG.network,
+            chainId: TESTNET_CONFIG.chainId,
+            address: `0x${"1".repeat(40)}`,
+            testnetOnly: true,
+            createdAt: NOW.toISOString(),
+            updatedAt: NOW.toISOString()
+          }
+        }
+      },
+      {
+        ...base,
+        id: "event_demo_006",
         type: "travel_support.proposed",
         payload: { proposal }
       },
       {
         ...base,
-        id: "event_demo_006",
+        id: "event_demo_007",
         type: "travel_support.sent",
         payload: { payment }
       }

@@ -12,9 +12,10 @@ import {
 interface WalletPanelProps {
   readonly role: "player" | "scout";
   readonly relationshipId: string;
+  readonly onWalletChange?: ((wallet: WalletPublicMetadata) => void) | undefined;
 }
 
-export function WalletPanel({ role, relationshipId }: WalletPanelProps) {
+export function WalletPanel({ role, relationshipId, onWalletChange }: WalletPanelProps) {
   const [wallet, setWallet] = useState<WalletPublicMetadata>();
   const [remotePlayerWallet, setRemotePlayerWallet] = useState<WalletPublicMetadata>();
   const [balance, setBalance] = useState<string>();
@@ -29,6 +30,7 @@ export function WalletPanel({ role, relationshipId }: WalletPanelProps) {
       subscribeRuntimeEvents((event) => {
         if (event.type === "wallet.updated" && event.payload.wallet.ownerRole === role) {
           setWallet(event.payload.wallet);
+          onWalletChange?.(event.payload.wallet);
           setBalance(event.payload.balance);
           setStatus("ready");
         }
@@ -36,7 +38,7 @@ export function WalletPanel({ role, relationshipId }: WalletPanelProps) {
           setRemotePlayerWallet(event.payload.wallet);
         }
       }),
-    [role]
+    [onWalletChange, role]
   );
 
   const initialize = async () => {
@@ -53,6 +55,7 @@ export function WalletPanel({ role, relationshipId }: WalletPanelProps) {
         throw new Error("Desktop runtime did not return wallet metadata.");
       }
       setWallet(event.payload.wallet);
+      onWalletChange?.(event.payload.wallet);
       setBalance(event.payload.balance);
       setStatus("ready");
     } catch (caught) {

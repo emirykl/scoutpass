@@ -21,7 +21,7 @@ debug-export/
 *.sqlite-wal
 
 # Models are downloaded locally and must not be committed
-models/
+/models/
 *.gguf
 *.bin
 
